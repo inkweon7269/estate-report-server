@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.paths.json",
+  "compilerOptions": {
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2020",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "lib": ["ES2021", "ES2017", "ES2016", "ES2015", "dom"],
+    "noEmit": false,
+    "incremental": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false
+  },
+  "exclude": ["./test/test-helper/init", "dist", "node_modules"]
+}
