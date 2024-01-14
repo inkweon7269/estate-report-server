@@ -28,6 +28,12 @@ export class UserEntity extends CommonEntity {
     @Column({ length: 255 })
     password: string;
 
+    @Column({ nullable: true })
+    currentRefreshToken: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    currentRefreshTokenExp: Date;
+
     @OneToMany(() => ReportEntity, (report) => report.user)
     reportList: ReportEntity[];
 

@@ -1,12 +1,24 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    ConflictException,
+    Controller,
+    Get,
+    Post,
+    Req,
+    Res,
+    UseGuards,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from '@root/resource/user/user.service';
-import { CreateUserDto, LoginUserDto } from '@root/resource/user/dtos/user.dto';
+import { CreateUserDto, LoginUserDto, RefreshTokenDto } from '@root/resource/user/dtos/user.dto';
 import { LocalServiceAuthGuard } from '@root/auth/guards/local-service.guard';
 import { AuthService } from '@root/auth/auth.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User, UserId } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
+import { Response } from 'express';
+import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -34,11 +46,51 @@ export class UserController {
 
     @ApiOperation({ summary: '로그인', description: '로그인을 합니다.' })
     @ApiBody({ type: LoginUserDto })
-    @UseGuards(LocalServiceAuthGuard)
     @Post('login')
-    async postLogin(@User() user: UserEntity, @Body() loginUserDto: LoginUserDto) {
-        const token = this.authService.loginServiceUser(user);
-        return token;
+    async postLogin(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
+        const user = await this.authService.validateServiceUser(loginUserDto.email, loginUserDto.password);
+        const accessToken = await this.authService.generateAccessToken(user);
+        const refreshToken = await this.authService.generateRefreshToken(user);
+
+        await this.userService.setCurrentRefreshToken(refreshToken, user.id);
+
+        res.setHeader('Authorization', 'Bearer ' + [accessToken, refreshToken]);
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+        });
+
+        return {
+            accessToken,
+            refreshToken,
+        };
+    }
+
+    @ApiOperation({ summary: 'Refresh Token으로 Access Token 갱신', description: '' })
+    @ApiBody({ type: RefreshTokenDto })
+    @Post('refresh')
+    async postRefresh(@Body() refreshTokenDto: RefreshTokenDto, @Res({ passthrough: true }) res: Response) {
+        const { accessToken: newAccessToken } = await this.authService.refresh(refreshTokenDto);
+        res.setHeader('Authorization', 'Bearer ' + newAccessToken);
+        res.cookie('accessToken', newAccessToken, {
+            httpOnly: true,
+        });
+        res.send({ newAccessToken });
+    }
+
+    // 권한 문제로 다시 살펴볼 필요가 있음
+    // https://velog.io/@from_numpy/NestJS-How-to-implement-Refresh-Token-with-JWT
+    @ApiOperation({ summary: '로그아웃' })
+    // @UseGuards(JwtRefreshGuard)
+    @UseGuards(JwtServiceAuthGuard)
+    @Post('logout')
+    async logout(@UserId() userId: number, @Res({ passthrough: true }) res: Response) {
+        await this.userService.removeRefreshToken(userId);
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return true;
     }
 
     @ApiOperation({ summary: '내 정보 조회', description: '사용자 아이디와 메일 정보를 조회합니다.' })

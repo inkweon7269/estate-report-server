@@ -4,12 +4,14 @@ import { UserEntity } from '@root/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '@root/resource/user/dtos/user.dto';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly configService: ConfigService,
     ) {}
 
     async getProfile(userId: number) {
@@ -41,6 +43,37 @@ export class UserService {
         return await this.userRepo.findOne({
             where: { email },
             withDeleted: true,
+        });
+    }
+
+    async setCurrentRefreshToken(refreshToken: string, userId: number) {
+        const currentRefreshToken = await this.getCurrentHashedRefreshToken(refreshToken);
+        const currentRefreshTokenExp = await this.getCurrentRefreshTokenExp();
+        await this.userRepo.update(userId, {
+            currentRefreshToken,
+            currentRefreshTokenExp,
+        });
+    }
+
+    async getCurrentHashedRefreshToken(refreshToken: string) {
+        // 토큰 값을 그대로 저장하기 보단, 암호화를 거쳐 데이터베이스에 저장한다.
+        // bcrypt는 단방향 해시 함수이므로 암호화된 값으로 원래 문자열을 유추할 수 없다.
+        return await bcrypt.hash(refreshToken, 11);
+    }
+
+    async getCurrentRefreshTokenExp(): Promise<Date> {
+        const currentDate = new Date();
+        // Date 형식으로 데이터베이스에 저장하기 위해 문자열을 숫자 타입으로 변환 (paresInt)
+        const currentRefreshTokenExp = new Date(
+            currentDate.getTime() + parseInt(this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME')),
+        );
+        return currentRefreshTokenExp;
+    }
+
+    async removeRefreshToken(userId: number): Promise<any> {
+        return await this.userRepo.update(userId, {
+            currentRefreshToken: null,
+            currentRefreshTokenExp: null,
         });
     }
 }
