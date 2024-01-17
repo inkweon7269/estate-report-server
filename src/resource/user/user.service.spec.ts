@@ -74,7 +74,6 @@ describe('UserService', () => {
                 const user = {
                     email: 'in12@test.com',
                     password: 'abcdefg',
-                    passwordChk: 'abcdefg',
                 };
 
                 userRepo.findOne.mockReturnValue(undefined);
