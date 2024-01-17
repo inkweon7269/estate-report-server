@@ -32,15 +32,6 @@ export class UserController {
     @ApiBody({ type: CreateUserDto })
     @Post('join')
     async postJoin(@Body() createUserDto: CreateUserDto) {
-        const user = await this.userService.findOneByEmail(createUserDto.email);
-
-        if (user) {
-            throw new ConflictException('이미 생성된 유저입니다.');
-        }
-
-        const hashPassword = await this.userService.hashPassword(createUserDto.password);
-        createUserDto.password = hashPassword;
-
         return await this.userService.postJoin(createUserDto);
     }
 

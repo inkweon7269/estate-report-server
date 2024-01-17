@@ -10,10 +10,6 @@ export class ApartService {
         private readonly apartRepo: Repository<ApartEntity>,
     ) {}
 
-    async getHello() {
-        return 'Hello World';
-    }
-
     async getApartAll(area3Id: number) {
         return await this.apartRepo.find({
             where: {

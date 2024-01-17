@@ -14,7 +14,7 @@ export class UserEntity extends CommonEntity {
     })
     @IsEmail()
     @IsNotEmpty()
-    @Column()
+    @Column({ unique: true })
     email: string;
 
     @ApiProperty({

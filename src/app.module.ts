@@ -11,6 +11,7 @@ import { ApartModule } from '@root/resource/apart/apart.module';
 import { ReportModule } from '@root/resource/report/report.module';
 import { UserModule } from '@root/resource/user/user.module';
 import { LikeModule } from '@root/resource/like/like.module';
+import { DateTransformInterceptor } from '@root/interceptors/data-transform.interceptor';
 
 @Module({
     imports: [
@@ -30,6 +31,10 @@ import { LikeModule } from '@root/resource/like/like.module';
         LikeModule,
     ],
     controllers: [AppController],
-    providers: [AppService, { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor }],
+    providers: [
+        AppService,
+        { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+        { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
+    ],
 })
 export class AppModule {}

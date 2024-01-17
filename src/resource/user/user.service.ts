@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@root/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -23,12 +23,27 @@ export class UserService {
             },
             where: { id: userId },
         });
+
+        if (!user) {
+            throw new NotFoundException(`User #${userId} not found`);
+        }
+
         return user;
     }
 
     async postJoin(createUserDto: CreateUserDto) {
-        const user = this.userRepo.create(createUserDto);
-        const result = await this.userRepo.save(user);
+        const user = await this.findOneByEmail(createUserDto.email);
+
+        if (user) {
+            throw new ConflictException('이미 생성된 유저입니다.');
+        }
+
+        const hashPassword = await this.hashPassword(createUserDto.password);
+        createUserDto.password = hashPassword;
+
+        const createUser = this.userRepo.create(createUserDto);
+        const result = await this.userRepo.save(createUser);
+
         const { password, ...responseUser } = result;
         return responseUser;
     }
