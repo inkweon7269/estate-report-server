@@ -1,8 +1,8 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ReportEntity } from '@root/entities/report.entity';
 import { PaginationDto } from '@root/common/dtos/pagination.dto';
-import { IsBoolean, IsOptional } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateReportDto extends PickType(ReportEntity, [
     'apartId',
@@ -42,6 +42,14 @@ export class UpdateReportDto extends PickType(ReportEntity, [
     'atm',
     'memo',
 ]) {}
+
+export class CreateLikeDto {
+    @IsNotEmpty()
+    @IsNumber()
+    reportId!: number;
+}
+
+export class DeleteLikeDto extends CreateLikeDto {}
 
 export class ReportPaginationDto extends PaginationDto {
     @ApiProperty({

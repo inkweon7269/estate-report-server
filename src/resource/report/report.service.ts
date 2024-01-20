@@ -4,18 +4,24 @@ import { ReportEntity } from '@root/entities/report.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from '@root/common/dtos/pagination.dto';
 import { calcListTotalCount, getSkip } from '@root/common/common.function';
-import { CreateReportDto, ReportPaginationDto, UpdateReportDto } from '@root/resource/report/dtos/report.dto';
+import {
+    CreateLikeDto,
+    CreateReportDto,
+    ReportPaginationDto,
+    UpdateReportDto,
+} from '@root/resource/report/dtos/report.dto';
+import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 
 @Injectable()
 export class ReportService {
     constructor(
         @InjectRepository(ReportEntity)
         private readonly reportRepo: Repository<ReportEntity>,
+        @InjectRepository(ReportUserBridgeEntity)
+        private readonly reportUserBridgeRepo: Repository<ReportUserBridgeEntity>,
     ) {}
 
     async getReports(userId: number, { page, limit, isLike }: ReportPaginationDto) {
-        console.log('isLike=================', isLike);
-
         const { skip, take } = getSkip(page, limit);
         const [list, count] = await this.reportRepo.findAndCount({
             relations: {
@@ -26,12 +32,12 @@ export class ReportService {
                         },
                     },
                 },
-                likeList: true,
+                reportUserBridge: true,
             },
             where: {
                 userId,
                 ...(isLike && {
-                    likeList: {
+                    reportUserBridge: {
                         userId,
                     },
                 }),
@@ -65,8 +71,8 @@ export class ReportService {
                     address1: item.apart.address1,
                     address2: item.apart.address2,
                 },
-                isLike: item.likeList.some((item) => item.userId === userId),
-                likeList: item.likeList,
+                isLike: item.reportUserBridge.some((item) => item.userId === userId),
+                likeList: item.reportUserBridge,
             })),
             page,
             ...calcListTotalCount(count, Number(limit)),
@@ -83,7 +89,7 @@ export class ReportService {
                         },
                     },
                 },
-                likeList: true,
+                reportUserBridge: true,
             },
             where: {
                 id,
@@ -102,8 +108,8 @@ export class ReportService {
                 address2: result.apart.address2,
             },
             totalScore: this.calcScore(result),
-            isLike: result.likeList.some((item) => item.userId === result.userId),
-            likeList: result.likeList,
+            isLike: result.reportUserBridge.some((item) => item.userId === result.userId),
+            likeList: result.reportUserBridge,
         };
     }
 
@@ -127,6 +133,17 @@ export class ReportService {
         return result.affected ? true : false;
     }
 
+    // 즐겨찾기 추가
+    async createLike({ userId, reportId }: { userId: number; reportId: number }) {
+        return this.reportUserBridgeRepo.save({ userId, reportId });
+    }
+
+    // 즐겨찾기 삭제
+    async deleteLike({ userId, reportId }: { userId: number; reportId: number }) {
+        const result = await this.reportUserBridgeRepo.delete({ userId, reportId });
+        return result.affected ? true : false;
+    }
+
     async findByReportId({ id, userId }: { id: number; userId: number }) {
         return await this.reportRepo.findOneBy({
             id,
@@ -138,6 +155,13 @@ export class ReportService {
         return await this.reportRepo.findOneBy({
             userId,
             apartId,
+        });
+    }
+
+    async findByLike({ userId, reportId }: { userId: number; reportId: number }) {
+        return await this.reportUserBridgeRepo.findOneBy({
+            userId,
+            reportId,
         });
     }
 

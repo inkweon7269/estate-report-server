@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 import { CommonEntity } from '@root/common/entities/common.entity';
 import { ReportEntity } from '@root/entities/report.entity';
-import { LikeEntity } from '@root/entities/like.entity';
+import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -37,6 +37,6 @@ export class UserEntity extends CommonEntity {
     @OneToMany(() => ReportEntity, (report) => report.user)
     reportList: ReportEntity[];
 
-    @OneToMany(() => LikeEntity, (like) => like.user)
-    likeList: LikeEntity[];
+    @OneToMany(() => ReportUserBridgeEntity, (bridge) => bridge.report)
+    reportUserBridge: ReportUserBridgeEntity[];
 }

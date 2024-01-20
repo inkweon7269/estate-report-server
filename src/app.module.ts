@@ -10,7 +10,6 @@ import { AreaModule } from '@root/resource/area/area.module';
 import { ApartModule } from '@root/resource/apart/apart.module';
 import { ReportModule } from '@root/resource/report/report.module';
 import { UserModule } from '@root/resource/user/user.module';
-import { LikeModule } from '@root/resource/like/like.module';
 import { DateTransformInterceptor } from '@root/interceptors/data-transform.interceptor';
 
 @Module({
@@ -28,7 +27,6 @@ import { DateTransformInterceptor } from '@root/interceptors/data-transform.inte
         ApartModule,
         ReportModule,
         UserModule,
-        LikeModule,
     ],
     controllers: [AppController],
     providers: [

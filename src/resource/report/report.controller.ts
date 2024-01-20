@@ -16,7 +16,13 @@ import {
 import { ReportService } from '@root/resource/report/report.service';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PaginationDto } from '@root/common/dtos/pagination.dto';
-import { CreateReportDto, ReportPaginationDto, UpdateReportDto } from '@root/resource/report/dtos/report.dto';
+import {
+    CreateLikeDto,
+    DeleteLikeDto,
+    CreateReportDto,
+    ReportPaginationDto,
+    UpdateReportDto,
+} from '@root/resource/report/dtos/report.dto';
 import { ApartService } from '@root/resource/apart/apart.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { UserId } from '@root/auth/auth.decorator';
@@ -28,6 +34,38 @@ export class ReportController {
         private reportService: ReportService,
         private apartService: ApartService,
     ) {}
+
+    @ApiOperation({ summary: '즐겨찾기 추가', description: '보고서를 즐겨찾기에 추가합니다.' })
+    @ApiBody({ type: CreateLikeDto })
+    @Post('like')
+    async createLike(@UserId() userId: number, @Body() createLikeDto: CreateLikeDto) {
+        const report = await this.reportService.findByReportId({ id: createLikeDto.reportId, userId });
+
+        if (!report) {
+            throw new NotFoundException('존재하지 않는 보고서입니다.');
+        }
+
+        const like = await this.reportService.findByLike({ userId, reportId: createLikeDto.reportId });
+
+        if (like) {
+            throw new ConflictException('이미 즐겨찾기에 추가된 보고서입니다.');
+        }
+
+        return await this.reportService.createLike({ userId, reportId: createLikeDto.reportId });
+    }
+
+    @ApiOperation({ summary: '즐겨찾기 제거', description: '즐겨찾기에서 보고서를 제거합니다.' })
+    @ApiBody({ type: DeleteLikeDto })
+    @Delete('like')
+    async deleteLike(@UserId() userId: number, @Body() deleteLikeDto: DeleteLikeDto) {
+        const like = await this.reportService.findByLike({ userId, reportId: deleteLikeDto.reportId });
+
+        if (!like) {
+            throw new NotFoundException('즐겨찾기 항목을 찾을 수 없습니다.');
+        }
+
+        return await this.reportService.deleteLike({ userId, reportId: deleteLikeDto.reportId });
+    }
 
     @ApiOperation({ summary: '전체 보고서 조회', description: '보고서 목록을 조회합니다.' })
     @ApiQuery({

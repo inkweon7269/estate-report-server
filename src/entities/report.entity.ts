@@ -4,9 +4,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApartEntity } from '@root/entities/apart.entity';
 import { UserEntity } from '@root/entities/user.entity';
-import { LikeEntity } from '@root/entities/like.entity';
+import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 
-// 체크 리스트 : https://docs.google.com/spreadsheets/d/136_RN-Igv6Evi9Q0Anlv3jQvEJYxAEJ5aYz8XsBw3Mw/edit?pli=1&fbclid=IwAR1-Lig49bTwNv_rzr_Yp5Tb9LaZdQ-J7KSwgttVoAAAKaZr8m2x1Bi2V8Y#gid=536028387
 @Entity({ name: 'report' })
 export class ReportEntity extends CommonEntity {
     @ApiProperty({ example: 1, description: '사용자 아이디', required: true })
@@ -147,6 +146,6 @@ export class ReportEntity extends CommonEntity {
     @JoinColumn({ name: 'apartId', referencedColumnName: 'id' })
     apart: ApartEntity;
 
-    @OneToMany(() => LikeEntity, (like) => like.report)
-    likeList: LikeEntity[];
+    @OneToMany(() => ReportUserBridgeEntity, (bridge) => bridge.report)
+    reportUserBridge: ReportUserBridgeEntity[];
 }
