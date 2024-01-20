@@ -70,11 +70,15 @@ export class AuthService {
         );
     }
 
-    async refresh(refreshTokenDto: RefreshTokenDto): Promise<{ accessToken: string }> {
-        const { refreshToken } = refreshTokenDto;
-        const decodedRefreshToken = this.jwtService.verify(refreshToken, {
-            secret: process.env.JWT_REFRESH_SECRET,
-        });
+    async refresh(refreshToken) {
+        let decodedRefreshToken;
+        try {
+            decodedRefreshToken = this.jwtService.verify(refreshToken, {
+                secret: process.env.JWT_REFRESH_SECRET,
+            });
+        } catch (e) {
+            throw new UnauthorizedException('Invalid token!');
+        }
 
         const userId = decodedRefreshToken.id;
 
@@ -85,7 +89,7 @@ export class AuthService {
         });
 
         if (!user.currentRefreshToken) {
-            return null;
+            throw new UnauthorizedException('Invalid user!');
         }
 
         const isRefreshTokenMatching = await bcrypt.compare(refreshToken, user.currentRefreshToken);
@@ -95,6 +99,6 @@ export class AuthService {
         }
 
         const accessToken = await this.generateAccessToken(user);
-        return { accessToken };
+        return { accessToken, user: { id: user.id, email: user.email } };
     }
 }

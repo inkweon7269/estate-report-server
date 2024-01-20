@@ -17,7 +17,7 @@ import { AuthService } from '@root/auth/auth.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User, UserId } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
 
 @ApiTags('사용자')
@@ -55,20 +55,25 @@ export class UserController {
 
         return {
             accessToken,
-            refreshToken,
+            user: {
+                id: user.id,
+                email: user.email,
+            },
         };
     }
 
     @ApiOperation({ summary: 'Refresh Token으로 Access Token 갱신', description: '' })
-    @ApiBody({ type: RefreshTokenDto })
-    @Post('refresh')
-    async postRefresh(@Body() refreshTokenDto: RefreshTokenDto, @Res({ passthrough: true }) res: Response) {
-        const { accessToken: newAccessToken } = await this.authService.refresh(refreshTokenDto);
+    @Get('refresh')
+    async getRefresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const refreshToken = req.cookies['refreshToken'];
+        const { accessToken: newAccessToken, user } = await this.authService.refresh(refreshToken);
+
         res.setHeader('Authorization', 'Bearer ' + newAccessToken);
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
         });
-        res.send({ newAccessToken });
+
+        res.send({ accessToken: newAccessToken, user });
     }
 
     // 권한 문제로 다시 살펴볼 필요가 있음

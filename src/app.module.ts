@@ -34,7 +34,7 @@ import { DateTransformInterceptor } from '@root/interceptors/data-transform.inte
     providers: [
         AppService,
         { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
-        { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
+        // { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
     ],
 })
 export class AppModule {}
