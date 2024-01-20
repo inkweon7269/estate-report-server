@@ -128,9 +128,18 @@ export class ReportService {
         });
     }
 
-    async deleteReport(id: number) {
-        const result = await this.reportRepo.softDelete(id);
-        return result.affected ? true : false;
+    async deleteReport({ userId, reportId }: { userId: number; reportId: number }) {
+        const result = await this.reportRepo.softDelete({
+            id: reportId,
+        });
+
+        const isDeleting = result.affected ? true : false;
+
+        if (isDeleting) {
+            await this.reportUserBridgeRepo.delete({ userId, reportId });
+        }
+
+        return isDeleting;
     }
 
     // 즐겨찾기 추가

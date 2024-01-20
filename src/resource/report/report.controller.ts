@@ -172,6 +172,6 @@ export class ReportController {
             throw new NotFoundException('해당 보고서를 찾을 수 없습니다.');
         }
 
-        return await this.reportService.deleteReport(id);
+        return await this.reportService.deleteReport({ userId, reportId: id });
     }
 }
