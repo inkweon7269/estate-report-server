@@ -6,7 +6,7 @@ import { ReportEntity } from '@root/entities/report.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 import { lengthValidationMessage } from '@root/common/validation-message/length-validation.message';
 import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -51,6 +51,16 @@ export class UserEntity extends CommonEntity {
 
     @Column({ type: 'timestamp', nullable: true })
     currentRefreshTokenExp: Date;
+
+    /*
+        실제 존재하지 않는 프로퍼티를 노출시키는 방법
+     */
+    /*
+    @Expose()
+    get customEmail() {
+        return `Custom ${this.email}`;
+    }
+    */
 
     @OneToMany(() => ReportEntity, (report) => report.user)
     reportList: ReportEntity[];
