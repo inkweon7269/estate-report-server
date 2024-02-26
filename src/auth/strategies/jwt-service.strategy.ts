@@ -17,7 +17,6 @@ export class JwtServiceStrategy extends PassportStrategy(Strategy, 'jwt-service'
         return {
             id: payload.id,
             email: payload.email,
-            createAt: payload.createAt,
         };
     }
 }
