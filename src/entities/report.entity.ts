@@ -5,6 +5,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApartEntity } from '@root/entities/apart.entity';
 import { UserEntity } from '@root/entities/user.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
+import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
 
 @Entity({ name: 'report' })
 export class ReportEntity extends CommonEntity {
@@ -128,7 +129,7 @@ export class ReportEntity extends CommonEntity {
         required: false,
     })
     @IsOptional()
-    @IsString()
+    @IsString({ message: stringValidationMessage })
     @Column({ nullable: true })
     memo: string;
 

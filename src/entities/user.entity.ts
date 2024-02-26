@@ -1,9 +1,11 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, ValidationArguments } from 'class-validator';
 import { CommonEntity } from '@root/common/entities/common.entity';
 import { ReportEntity } from '@root/entities/report.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
+import { lengthValidationMessage } from '@root/common/validation-message/length-validation.message';
+import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -12,7 +14,7 @@ export class UserEntity extends CommonEntity {
         description: '사용자 이메일',
         required: true,
     })
-    @IsEmail({}, { message: '이메일 양식으로 입력해야 합니다.' })
+    @IsEmail({}, { message: emailValidationMessage })
     @IsNotEmpty({ message: '이메일은 필수 입력 항목입니다.' })
     @Column({ unique: true })
     email: string;
@@ -23,7 +25,9 @@ export class UserEntity extends CommonEntity {
         required: true,
     })
     @IsString({ message: '비밀번호는 String 타입을 입력해야 합니다.' })
-    @Length(1, 255)
+    @Length(1, 255, {
+        message: lengthValidationMessage,
+    })
     @IsNotEmpty({ message: '비밀번호는 필수 입력 항목입니다.' })
     @Column({ length: 255 })
     password: string;
