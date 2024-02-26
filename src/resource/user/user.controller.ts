@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     Body,
+    ClassSerializerInterceptor,
     ConflictException,
     Controller,
     Get,
@@ -8,6 +9,7 @@ import {
     Req,
     Res,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from '@root/resource/user/user.service';
@@ -40,6 +42,8 @@ export class UserController {
     @Post('login')
     async postLogin(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
         const user = await this.authService.validateServiceUser(loginUserDto.email, loginUserDto.password);
+        console.log(user);
+
         const accessToken = await this.authService.generateAccessToken(user);
         const refreshToken = await this.authService.generateRefreshToken(user);
 
@@ -91,6 +95,16 @@ export class UserController {
 
     @ApiOperation({ summary: '내 정보 조회', description: '사용자 아이디와 메일 정보를 조회합니다.' })
     @UseGuards(JwtServiceAuthGuard)
+    /**
+     * serialization
+     *  - 직렬화
+     *  - 현재 시스템에서 사용되는 (NestJS) 데이터 구조를 다른 시스템에서도 쉽게 사용할 수 있는 포맷으로 변환
+     *  - class object에서 JSON 포맷으로 변환
+     * deserialization
+     *  - 역직렬화
+     *  - 위 개념의 반대
+     */
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get('profile')
     async getProfile(@User('id') userId: number) {
         return await this.userService.getProfile(userId);

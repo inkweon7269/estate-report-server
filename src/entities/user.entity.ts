@@ -6,6 +6,7 @@ import { ReportEntity } from '@root/entities/report.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 import { lengthValidationMessage } from '@root/common/validation-message/length-validation.message';
 import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -30,6 +31,19 @@ export class UserEntity extends CommonEntity {
     })
     @IsNotEmpty({ message: '비밀번호는 필수 입력 항목입니다.' })
     @Column({ length: 255 })
+    /**
+     * Request
+     * frontend -> backend
+     * plain object (JSON) -> class instance (dto)
+     *
+     * Response
+     * backend -> frontend
+     * class instance (dto) -> plain object (JSON)
+     *
+     * toClassOnly -> class instance로 변환될 때 (요청일 때)
+     * toPlainOnly -> plain object로 변환될 때 (응답일 때)
+     */
+    @Exclude({ toPlainOnly: true })
     password: string;
 
     @Column({ nullable: true })
