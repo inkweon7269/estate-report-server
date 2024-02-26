@@ -12,8 +12,8 @@ export class UserEntity extends CommonEntity {
         description: '사용자 이메일',
         required: true,
     })
-    @IsEmail()
-    @IsNotEmpty()
+    @IsEmail({}, { message: '이메일 양식으로 입력해야 합니다.' })
+    @IsNotEmpty({ message: '이메일은 필수 입력 항목입니다.' })
     @Column({ unique: true })
     email: string;
 
@@ -22,9 +22,9 @@ export class UserEntity extends CommonEntity {
         description: '사용자 비밀번호',
         required: true,
     })
-    @IsString()
+    @IsString({ message: '비밀번호는 String 타입을 입력해야 합니다.' })
     @Length(1, 255)
-    @IsNotEmpty()
+    @IsNotEmpty({ message: '비밀번호는 필수 입력 항목입니다.' })
     @Column({ length: 255 })
     password: string;
 
