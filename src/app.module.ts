@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -32,6 +32,7 @@ import { DateTransformInterceptor } from '@root/interceptors/data-transform.inte
     providers: [
         AppService,
         { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+        { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
         // { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
     ],
 })

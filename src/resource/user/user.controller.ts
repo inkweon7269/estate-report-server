@@ -104,7 +104,7 @@ export class UserController {
      *  - 역직렬화
      *  - 위 개념의 반대
      */
-    @UseInterceptors(ClassSerializerInterceptor)
+    // @UseInterceptors(ClassSerializerInterceptor)
     @Get('profile')
     async getProfile(@User('id') userId: number) {
         return await this.userService.getProfile(userId);
