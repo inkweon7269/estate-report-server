@@ -15,7 +15,7 @@ import { CreateUserDto, LoginUserDto, RefreshTokenDto } from '@root/resource/use
 import { LocalServiceAuthGuard } from '@root/auth/guards/local-service.guard';
 import { AuthService } from '@root/auth/auth.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
-import { User, UserId } from '@root/auth/auth.decorator';
+import { User } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
 import { Request, Response } from 'express';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
@@ -82,7 +82,7 @@ export class UserController {
     // @UseGuards(JwtRefreshGuard)
     @UseGuards(JwtServiceAuthGuard)
     @Post('logout')
-    async logout(@UserId() userId: number, @Res({ passthrough: true }) res: Response) {
+    async logout(@User('id') userId: number, @Res({ passthrough: true }) res: Response) {
         await this.userService.removeRefreshToken(userId);
         res.clearCookie('accessToken');
         res.clearCookie('refreshToken');
@@ -92,7 +92,7 @@ export class UserController {
     @ApiOperation({ summary: '내 정보 조회', description: '사용자 아이디와 메일 정보를 조회합니다.' })
     @UseGuards(JwtServiceAuthGuard)
     @Get('profile')
-    async getProfile(@UserId() userId: number) {
+    async getProfile(@User('id') userId: number) {
         return await this.userService.getProfile(userId);
     }
 }

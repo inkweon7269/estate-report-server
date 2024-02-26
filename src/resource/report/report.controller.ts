@@ -25,7 +25,7 @@ import {
 } from '@root/resource/report/dtos/report.dto';
 import { ApartService } from '@root/resource/apart/apart.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
-import { UserId } from '@root/auth/auth.decorator';
+import { User } from '@root/auth/auth.decorator';
 
 @UseGuards(JwtServiceAuthGuard)
 @Controller('v1/report')
@@ -38,7 +38,7 @@ export class ReportController {
     @ApiOperation({ summary: '즐겨찾기 추가', description: '보고서를 즐겨찾기에 추가합니다.' })
     @ApiBody({ type: CreateLikeDto })
     @Post('like')
-    async createLike(@UserId() userId: number, @Body() createLikeDto: CreateLikeDto) {
+    async createLike(@User('id') userId: number, @Body() createLikeDto: CreateLikeDto) {
         const report = await this.reportService.findByReportId({ id: createLikeDto.reportId, userId });
 
         if (!report) {
@@ -57,7 +57,7 @@ export class ReportController {
     @ApiOperation({ summary: '즐겨찾기 제거', description: '즐겨찾기에서 보고서를 제거합니다.' })
     @ApiBody({ type: DeleteLikeDto })
     @Delete('like')
-    async deleteLike(@UserId() userId: number, @Body() deleteLikeDto: DeleteLikeDto) {
+    async deleteLike(@User('id') userId: number, @Body() deleteLikeDto: DeleteLikeDto) {
         const like = await this.reportService.findByLike({ userId, reportId: deleteLikeDto.reportId });
 
         if (!like) {
@@ -81,7 +81,7 @@ export class ReportController {
         required: true,
     })
     @Get()
-    async getReports(@UserId() userId: number, @Query() reportPaginationDto: ReportPaginationDto) {
+    async getReports(@User('id') userId: number, @Query() reportPaginationDto: ReportPaginationDto) {
         return await this.reportService.getReports(userId, reportPaginationDto);
     }
 
@@ -93,7 +93,7 @@ export class ReportController {
         required: true,
     })
     @Get(':id')
-    async getReport(@UserId() userId: number, @Param('id', ParseIntPipe) id: number) {
+    async getReport(@User('id') userId: number, @Param('id', ParseIntPipe) id: number) {
         const found = await this.reportService.findByReportId({
             id,
             userId,
@@ -109,7 +109,7 @@ export class ReportController {
     @ApiOperation({ summary: '보고서 생성', description: '보고서를 생성합니다.' })
     @ApiBody({ type: CreateReportDto })
     @Post()
-    async createReport(@UserId() userId: number, @Body() createReportDto: CreateReportDto) {
+    async createReport(@User('id') userId: number, @Body() createReportDto: CreateReportDto) {
         const apart = await this.apartService.findById(createReportDto.apartId);
 
         if (!apart) {
@@ -138,7 +138,7 @@ export class ReportController {
     @ApiBody({ type: UpdateReportDto })
     @Put(':id')
     async updateReport(
-        @UserId() userId: number,
+        @User('id') userId: number,
         @Param('id', ParseIntPipe) id: number,
         @Body() updateReportDto: UpdateReportDto,
     ) {
@@ -162,7 +162,7 @@ export class ReportController {
         required: true,
     })
     @Delete(':id')
-    async deleteReport(@UserId() userId: number, @Param('id', ParseIntPipe) id: number) {
+    async deleteReport(@User('id') userId: number, @Param('id', ParseIntPipe) id: number) {
         const found = await this.reportService.findByReportId({
             id,
             userId,
