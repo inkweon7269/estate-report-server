@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Area1Entity } from '@root/entities/area-1.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
 import { Area2Entity } from '@root/entities/area-2.entity';
 import { Area3Entity } from '@root/entities/area-3.entity';
 import { ApartEntity } from '@root/entities/apart.entity';
+import { PaginateAreaDto } from '@root/resource/area/dtos/paginate-area.dto';
 
 @Injectable()
 export class AreaService {
@@ -53,5 +54,60 @@ export class AreaService {
                 area2Id,
             },
         });
+    }
+
+    async getTestCursorPagination(query: PaginateAreaDto) {
+        const where: FindOptionsWhere<Area2Entity> = {};
+
+        if (query.where__id_less_than) {
+            where.id = LessThan(query.where__id_less_than);
+        } else if (query.where__id_more_than) {
+            where.id = MoreThan(query.where__id_more_than);
+        }
+
+        const areas = await this.area2Repo.find({
+            where,
+            take: query.take,
+            order: {
+                id: query.order__createAt,
+            },
+        });
+
+        const lastItem = areas.length > 0 && areas.length === query.take ? areas[areas.length - 1] : null;
+        const nextUrl = lastItem && new URL('http://localhost:8000/v1/area/test/cursor/pagination');
+
+        if (nextUrl) {
+            for (const key of Object.keys(query)) {
+                if (query[key]) {
+                    if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
+                        nextUrl.searchParams.append(key, query[key]);
+                    }
+                }
+            }
+
+            const key = query.order__createAt === 'ASC' ? 'where__id_more_than' : 'where__id_less_than';
+
+            nextUrl.searchParams.append(key, lastItem.id.toString());
+        }
+
+        /**
+         * Response
+         *
+         * data: Data[],
+         * cursor: {
+         *   after: 마지막 data의 ID
+         * },
+         * count: 응답한 데이터의 갯수
+         * next: 다음 요청을 할 때 사용할 URL
+         */
+
+        return {
+            data: areas,
+            cursor: {
+                after: lastItem?.id ?? null,
+            },
+            count: areas.length,
+            next: nextUrl?.toString() ?? null,
+        };
     }
 }

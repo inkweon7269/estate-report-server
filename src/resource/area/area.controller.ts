@@ -1,7 +1,8 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { AreaService } from '@root/resource/area/area.service';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ApartService } from '@root/resource/apart/apart.service';
+import { PaginateAreaDto } from '@root/resource/area/dtos/paginate-area.dto';
 
 @Controller('v1/area')
 export class AreaController {
@@ -50,5 +51,13 @@ export class AreaController {
     @Get('a3/:id')
     async getApartAll(@Param('id', ParseIntPipe) id: number) {
         return await this.apartService.getApartAll(id);
+    }
+
+    /**
+     * Test - Cursor Based Pagination
+     */
+    @Get('test/cursor/pagination')
+    async getTestCursorPagination(@Query() query: PaginateAreaDto) {
+        return await this.areaService.getTestCursorPagination(query);
     }
 }
