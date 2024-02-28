@@ -58,6 +58,6 @@ export class AreaController {
      */
     @Get('test/cursor/pagination')
     async getTestCursorPagination(@Query() query: PaginateAreaDto) {
-        return await this.areaService.getTestCursorPagination(query);
+        return await this.areaService.getTestPaginate(query);
     }
 }

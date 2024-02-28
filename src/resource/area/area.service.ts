@@ -56,6 +56,33 @@ export class AreaService {
         });
     }
 
+    async getTestPaginate(dto: PaginateAreaDto) {
+        if (dto.page) {
+            return await this.getTestPagePagination(dto);
+        } else {
+            return await this.getTestCursorPagination(dto);
+        }
+    }
+
+    async getTestPagePagination(query: PaginateAreaDto) {
+        /**
+         * data: Data[],
+         * total: number,
+         */
+        const [areas, count] = await this.area2Repo.findAndCount({
+            skip: query.take * (query.page - 1),
+            take: query.take,
+            order: {
+                createAt: query.order__createAt,
+            },
+        });
+
+        return {
+            data: areas,
+            total: count,
+        };
+    }
+
     async getTestCursorPagination(query: PaginateAreaDto) {
         const where: FindOptionsWhere<Area2Entity> = {};
 
