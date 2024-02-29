@@ -178,7 +178,7 @@ export class CommonService {
             const [_, field, operator] = split;
 
             /*
-            // where__id_-between = 3, 4
+            // where__id__between = 3, 4
             // 만약에 split 대상 문자가 존재하지 않으면 길이가 무조건 1이다.
             const values = value.toString().split(',');
             if (operator === 'between') {
