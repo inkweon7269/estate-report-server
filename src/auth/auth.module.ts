@@ -9,6 +9,7 @@ import { LocalServiceStrategy } from './strategies/local-service.strategy';
 import { JwtServiceStrategy } from '@root/auth/strategies/jwt-service.strategy';
 import { JwtRefreshStrategy } from '@root/auth/strategies/jwt-refresh.strategy';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
+import { ENV_JWT_ACCESS_EXPIRATION_TIME, ENV_JWT_ACCESS_SECRET } from '@root/common/const/env-keys.const';
 
 @Module({
     imports: [
@@ -17,9 +18,9 @@ import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
         JwtModule.registerAsync({
             useFactory: (configService: ConfigService) => {
                 return {
-                    secret: configService.get('JWT_ACCESS_SECRET'),
+                    secret: configService.get(ENV_JWT_ACCESS_SECRET),
                     signOptions: {
-                        expiresIn: configService.get('JWT_ACCESS_EXPIRATION_TIME'),
+                        expiresIn: configService.get(ENV_JWT_ACCESS_EXPIRATION_TIME),
                     },
                 };
             },
