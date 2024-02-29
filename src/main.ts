@@ -17,6 +17,7 @@ async function bootstrap() {
                 enableImplicitConversion: true,
             },
             whitelist: true,
+            forbidNonWhitelisted: true,
         }),
     );
 

@@ -11,6 +11,7 @@ import { ApartModule } from '@root/resource/apart/apart.module';
 import { ReportModule } from '@root/resource/report/report.module';
 import { UserModule } from '@root/resource/user/user.module';
 import { DateTransformInterceptor } from '@root/interceptors/data-transform.interceptor';
+import { CommonModule } from '@root/common/common.module';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { DateTransformInterceptor } from '@root/interceptors/data-transform.inte
             inject: [ConfigService],
             useFactory: TypeormConfig,
         }),
+        CommonModule,
         AreaModule,
         ApartModule,
         ReportModule,

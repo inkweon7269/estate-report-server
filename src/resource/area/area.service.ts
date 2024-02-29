@@ -6,6 +6,7 @@ import { Area2Entity } from '@root/entities/area-2.entity';
 import { Area3Entity } from '@root/entities/area-3.entity';
 import { ApartEntity } from '@root/entities/apart.entity';
 import { PaginateAreaDto } from '@root/resource/area/dtos/paginate-area.dto';
+import { CommonService } from '@root/common/common.service';
 
 @Injectable()
 export class AreaService {
@@ -16,6 +17,8 @@ export class AreaService {
         private readonly area2Repo: Repository<Area2Entity>,
         @InjectRepository(Area3Entity)
         private readonly area3Repo: Repository<Area3Entity>,
+
+        private readonly commonService: CommonService,
     ) {}
 
     async getA1All() {
@@ -57,11 +60,19 @@ export class AreaService {
     }
 
     async getTestPaginate(dto: PaginateAreaDto) {
-        if (dto.page) {
+        return this.commonService.paginate(
+            dto,
+            this.area2Repo,
+            {
+                relations: ['area1', 'area3List'],
+            },
+            '',
+        );
+        /*if (dto.page) {
             return await this.getTestPagePagination(dto);
         } else {
             return await this.getTestCursorPagination(dto);
-        }
+        }*/
     }
 
     async getTestPagePagination(query: PaginateAreaDto) {
@@ -86,10 +97,10 @@ export class AreaService {
     async getTestCursorPagination(query: PaginateAreaDto) {
         const where: FindOptionsWhere<Area2Entity> = {};
 
-        if (query.where__id_less_than) {
-            where.id = LessThan(query.where__id_less_than);
-        } else if (query.where__id_more_than) {
-            where.id = MoreThan(query.where__id_more_than);
+        if (query.where__id__less_than) {
+            where.id = LessThan(query.where__id__less_than);
+        } else if (query.where__id__more_than) {
+            where.id = MoreThan(query.where__id__more_than);
         }
 
         const areas = await this.area2Repo.find({
@@ -106,13 +117,13 @@ export class AreaService {
         if (nextUrl) {
             for (const key of Object.keys(query)) {
                 if (query[key]) {
-                    if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
+                    if (key !== 'where__id__more_than' && key !== 'where__id__less_than') {
                         nextUrl.searchParams.append(key, query[key]);
                     }
                 }
             }
 
-            const key = query.order__createAt === 'ASC' ? 'where__id_more_than' : 'where__id_less_than';
+            const key = query.order__createAt === 'ASC' ? 'where__id__more_than' : 'where__id__less_than';
 
             nextUrl.searchParams.append(key, lastItem.id.toString());
         }
