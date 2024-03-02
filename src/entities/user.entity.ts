@@ -6,7 +6,9 @@ import { ReportEntity } from '@root/entities/report.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 import { lengthValidationMessage } from '@root/common/validation-message/length-validation.message';
 import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { join } from 'path';
+import { USERS_PUBLIC_IMAGE_PATH } from '@root/common/const/path.const';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -55,6 +57,7 @@ export class UserEntity extends CommonEntity {
     @Column({
         nullable: true,
     })
+    @Transform(({ value }) => value && `/${join(USERS_PUBLIC_IMAGE_PATH, value)}`)
     image?: string;
 
     /*
