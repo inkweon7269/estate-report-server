@@ -8,6 +8,7 @@ import {
     Post,
     Req,
     Res,
+    UploadedFile,
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
@@ -21,6 +22,7 @@ import { User } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
 import { Request, Response } from 'express';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -32,9 +34,10 @@ export class UserController {
 
     @ApiOperation({ summary: '회원가입', description: '회원가입합니다.' })
     @ApiBody({ type: CreateUserDto })
+    @UseInterceptors(FileInterceptor('image'))
     @Post('join')
-    async postJoin(@Body() createUserDto: CreateUserDto) {
-        return await this.userService.postJoin(createUserDto);
+    async postJoin(@Body() createUserDto: CreateUserDto, @UploadedFile() file?: Express.Multer.File) {
+        return await this.userService.postJoin(createUserDto, file?.filename);
     }
 
     @ApiOperation({ summary: '로그인', description: '로그인을 합니다.' })

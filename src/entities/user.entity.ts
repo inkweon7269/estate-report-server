@@ -52,6 +52,11 @@ export class UserEntity extends CommonEntity {
     @Column({ type: 'timestamp', nullable: true })
     currentRefreshTokenExp: Date;
 
+    @Column({
+        nullable: true,
+    })
+    image?: string;
+
     /*
         실제 존재하지 않는 프로퍼티를 노출시키는 방법
      */

@@ -26,7 +26,7 @@ export class UserService {
         return user;
     }
 
-    async postJoin(createUserDto: CreateUserDto) {
+    async postJoin(createUserDto: CreateUserDto, image?: string) {
         const user = await this.findOneByEmail(createUserDto.email);
 
         if (user) {
@@ -36,7 +36,7 @@ export class UserService {
         const hashPassword = await this.hashPassword(createUserDto.password);
         createUserDto.password = hashPassword;
 
-        const createUser = this.userRepo.create(createUserDto);
+        const createUser = this.userRepo.create({ ...createUserDto, image });
         const result = await this.userRepo.save(createUser);
 
         const { password, ...responseUser } = result;
