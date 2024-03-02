@@ -15,6 +15,13 @@ export const PUBLIC_FOLDER_PATH = join(PROJECT_ROOT_PATH, PUBLIC_FOLDER_NAME);
 // /{프로젝트의 위치}/public/users
 export const USERS_IMAGE_PATH = join(PUBLIC_FOLDER_PATH, USERS_FOLDER_NAME);
 
+// 임시 폴더 이름
+export const TEMP_FOLDER_NAME = 'temp';
+
 // 상대 경로
 // /public/users/aaa.png
 export const USERS_PUBLIC_IMAGE_PATH = join(PUBLIC_FOLDER_NAME, USERS_FOLDER_NAME);
+
+// 임시 파일들을 저장할 폴더
+// {프로젝트 경로}/temp
+export const TEMP_FOLDER_PATH = join(PUBLIC_FOLDER_PATH, TEMP_FOLDER_NAME);

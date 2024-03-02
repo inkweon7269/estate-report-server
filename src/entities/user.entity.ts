@@ -1,6 +1,6 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Length, ValidationArguments } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Length, ValidationArguments } from 'class-validator';
 import { CommonEntity } from '@root/common/entities/common.entity';
 import { ReportEntity } from '@root/entities/report.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
@@ -9,6 +9,7 @@ import { emailValidationMessage } from '@root/common/validation-message/email-va
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { join } from 'path';
 import { USERS_PUBLIC_IMAGE_PATH } from '@root/common/const/path.const';
+import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -58,6 +59,8 @@ export class UserEntity extends CommonEntity {
         nullable: true,
     })
     @Transform(({ value }) => value && `/${join(USERS_PUBLIC_IMAGE_PATH, value)}`)
+    @IsOptional()
+    @IsString({ message: stringValidationMessage })
     image?: string;
 
     /*

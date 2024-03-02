@@ -34,10 +34,11 @@ export class UserController {
 
     @ApiOperation({ summary: '회원가입', description: '회원가입합니다.' })
     @ApiBody({ type: CreateUserDto })
-    @UseInterceptors(FileInterceptor('image'))
     @Post('join')
-    async postJoin(@Body() createUserDto: CreateUserDto, @UploadedFile() file?: Express.Multer.File) {
-        return await this.userService.postJoin(createUserDto, file?.filename);
+    async postJoin(@Body() createUserDto: CreateUserDto) {
+        await this.userService.createUserImage(createUserDto);
+
+        return await this.userService.postJoin(createUserDto);
     }
 
     @ApiOperation({ summary: '로그인', description: '로그인을 합니다.' })
