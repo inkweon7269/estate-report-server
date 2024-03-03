@@ -171,8 +171,10 @@ export class ReportService {
         return result.affected ? true : false;
     }
 
-    async findByReportId({ id, userId }: { id: number; userId: number }) {
-        return await this.reportRepo.findOne({
+    async findByReportId({ id, userId, queryRunner }: { id: number; userId: number; queryRunner?: QueryRunner }) {
+        const repository = this.getRepository(queryRunner);
+
+        return await repository.findOne({
             where: {
                 id,
                 userId,

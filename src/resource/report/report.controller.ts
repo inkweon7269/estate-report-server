@@ -13,6 +13,7 @@ import {
     Put,
     Query,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { ReportService } from '@root/resource/report/report.service';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
@@ -28,8 +29,10 @@ import { ApartService } from '@root/resource/apart/apart.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User } from '@root/auth/auth.decorator';
 import { ImageType } from '@root/common/entities/image.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner as QR } from 'typeorm';
 import { ReportImagesService } from '@root/resource/report/images.service';
+import { TransactionInterceptor } from '@root/common/interceptor/transaction.interceptor';
+import { QueryRunner } from '@root/common/decorator/query-runner.decorator';
 
 @UseGuards(JwtServiceAuthGuard)
 @Controller('v1/report')
@@ -114,8 +117,13 @@ export class ReportController {
 
     @ApiOperation({ summary: '보고서 생성', description: '보고서를 생성합니다.' })
     @ApiBody({ type: CreateReportDto })
+    @UseInterceptors(TransactionInterceptor)
     @Post()
-    async createReport(@User('id') userId: number, @Body() createReportDto: CreateReportDto) {
+    async createReport(
+        @User('id') userId: number,
+        @Body() createReportDto: CreateReportDto,
+        @QueryRunner() queryRunner: QR,
+    ) {
         const isExistApart = await this.apartService.findById(createReportDto.apartId);
 
         if (!isExistApart) {
@@ -131,37 +139,23 @@ export class ReportController {
             throw new ConflictException('이미 해당 아파트에 대한 보고서가 존재합니다.');
         }
 
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+        const report = await this.reportService.createReport(userId, createReportDto, queryRunner);
 
-        try {
-            const report = await this.reportService.createReport(userId, createReportDto, queryRunner);
-
-            if (createReportDto.images.length) {
-                for (let i = 0; i < createReportDto.images.length; i++) {
-                    await this.reportImagesService.createReportImage(
-                        {
-                            report,
-                            order: i,
-                            path: createReportDto.images[i],
-                            type: ImageType.REPORT_IMAGE,
-                        },
-                        queryRunner,
-                    );
-                }
+        if (createReportDto.images.length) {
+            for (let i = 0; i < createReportDto.images.length; i++) {
+                await this.reportImagesService.createReportImage(
+                    {
+                        report,
+                        order: i,
+                        path: createReportDto.images[i],
+                        type: ImageType.REPORT_IMAGE,
+                    },
+                    queryRunner,
+                );
             }
-
-            await queryRunner.commitTransaction();
-            await queryRunner.release();
-
-            return await this.reportService.findByReportId({ id: report.id, userId });
-        } catch (e) {
-            await queryRunner.rollbackTransaction();
-            await queryRunner.release();
-
-            throw new InternalServerErrorException('예상치 못한 오류가 발생했습니다.');
         }
+
+        return await this.reportService.findByReportId({ id: report.id, userId, queryRunner });
     }
 
     @ApiOperation({ summary: '보고서 수정', description: '보고서를 수정합니다.' })
