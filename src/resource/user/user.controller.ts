@@ -23,6 +23,7 @@ import { UserEntity } from '@root/entities/user.entity';
 import { Request, Response } from 'express';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { LogInterceptor } from '@root/common/interceptor/log.interceptor';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -107,6 +108,7 @@ export class UserController {
      *  - 위 개념의 반대
      */
     // @UseInterceptors(ClassSerializerInterceptor)
+    @UseInterceptors(LogInterceptor)
     @Get('profile')
     async getProfile(@User('id') userId: number) {
         return await this.userService.getProfile(userId);

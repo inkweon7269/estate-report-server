@@ -42,7 +42,7 @@ import { PUBLIC_FOLDER_PATH } from '@root/common/const/path.const';
     controllers: [AppController],
     providers: [
         AppService,
-        { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+        // { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
         // { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
     ],
