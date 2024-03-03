@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ReportEntity } from '@root/entities/report.entity';
 import { PaginationDto } from '@root/common/dtos/pagination.dto';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateReportDto extends PickType(ReportEntity, [
@@ -22,7 +22,12 @@ export class CreateReportDto extends PickType(ReportEntity, [
     'store',
     'atm',
     'memo',
-]) {}
+]) {
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    images: string[] = [];
+}
 
 export class UpdateReportDto extends PickType(ReportEntity, [
     'space',
@@ -41,7 +46,12 @@ export class UpdateReportDto extends PickType(ReportEntity, [
     'store',
     'atm',
     'memo',
-]) {}
+]) {
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    images: string[];
+}
 
 export class CreateLikeDto {
     @IsNotEmpty()

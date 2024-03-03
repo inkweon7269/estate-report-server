@@ -4,6 +4,7 @@ import {
     Controller,
     Delete,
     Get,
+    InternalServerErrorException,
     NotFoundException,
     Param,
     ParseIntPipe,
@@ -26,13 +27,18 @@ import {
 import { ApartService } from '@root/resource/apart/apart.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User } from '@root/auth/auth.decorator';
+import { ImageType } from '@root/common/entities/image.entity';
+import { DataSource } from 'typeorm';
+import { ReportImagesService } from '@root/resource/report/images.service';
 
 @UseGuards(JwtServiceAuthGuard)
 @Controller('v1/report')
 export class ReportController {
     constructor(
-        private reportService: ReportService,
-        private apartService: ApartService,
+        private readonly reportService: ReportService,
+        private readonly reportImagesService: ReportImagesService,
+        private readonly apartService: ApartService,
+        private readonly dataSource: DataSource,
     ) {}
 
     @ApiOperation({ summary: '즐겨찾기 추가', description: '보고서를 즐겨찾기에 추가합니다.' })
@@ -110,22 +116,52 @@ export class ReportController {
     @ApiBody({ type: CreateReportDto })
     @Post()
     async createReport(@User('id') userId: number, @Body() createReportDto: CreateReportDto) {
-        const apart = await this.apartService.findById(createReportDto.apartId);
+        const isExistApart = await this.apartService.findById(createReportDto.apartId);
 
-        if (!apart) {
+        if (!isExistApart) {
             throw new NotFoundException('해당 아파트를 찾을 수 없습니다.');
         }
 
-        const report = await this.reportService.findByApartId({
+        const isExistReport = await this.reportService.findByApartId({
             userId,
             apartId: createReportDto.apartId,
         });
 
-        if (report) {
+        if (isExistReport) {
             throw new ConflictException('이미 해당 아파트에 대한 보고서가 존재합니다.');
         }
 
-        return await this.reportService.createReport(userId, createReportDto);
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const report = await this.reportService.createReport(userId, createReportDto, queryRunner);
+
+            if (createReportDto.images.length) {
+                for (let i = 0; i < createReportDto.images.length; i++) {
+                    await this.reportImagesService.createReportImage(
+                        {
+                            report,
+                            order: i,
+                            path: createReportDto.images[i],
+                            type: ImageType.REPORT_IMAGE,
+                        },
+                        queryRunner,
+                    );
+                }
+            }
+
+            await queryRunner.commitTransaction();
+            await queryRunner.release();
+
+            return await this.reportService.findByReportId({ id: report.id, userId });
+        } catch (e) {
+            await queryRunner.rollbackTransaction();
+            await queryRunner.release();
+
+            throw new InternalServerErrorException('예상치 못한 오류가 발생했습니다.');
+        }
     }
 
     @ApiOperation({ summary: '보고서 수정', description: '보고서를 수정합니다.' })

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReportEntity } from '@root/entities/report.entity';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { PaginationDto } from '@root/common/dtos/pagination.dto';
 import { calcListTotalCount, getSkip } from '@root/common/common.function';
 import {
@@ -11,6 +11,12 @@ import {
     UpdateReportDto,
 } from '@root/resource/report/dtos/report.dto';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
+import { basename, join } from 'path';
+import { REPORTS_IMAGE_PATH, TEMP_FOLDER_PATH, USERS_IMAGE_PATH } from '@root/common/const/path.const';
+import { promises } from 'fs';
+import { ImageEntity } from '@root/common/entities/image.entity';
+import { CreateReportImageDto } from '@root/common/dtos/create-image.dto';
+import { DEFAULT_REPORT_FIND_OPTIONS } from '@root/resource/report/const/default-report-find-options.const';
 
 @Injectable()
 export class ReportService {
@@ -19,6 +25,8 @@ export class ReportService {
         private readonly reportRepo: Repository<ReportEntity>,
         @InjectRepository(ReportUserBridgeEntity)
         private readonly reportUserBridgeRepo: Repository<ReportUserBridgeEntity>,
+        @InjectRepository(ImageEntity)
+        private readonly imageRepo: Repository<ImageEntity>,
     ) {}
 
     async getReports(userId: number, { page, limit, isLike }: ReportPaginationDto) {
@@ -90,6 +98,7 @@ export class ReportService {
                     },
                 },
                 reportUserBridge: true,
+                images: true,
             },
             where: {
                 id,
@@ -113,18 +122,27 @@ export class ReportService {
         };
     }
 
-    async createReport(userId: number, createReportDto: CreateReportDto) {
-        const createReport = this.reportRepo.create({
+    getRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<ReportEntity>(ReportEntity) : this.reportRepo;
+    }
+
+    async createReport(userId: number, createReportDto: CreateReportDto, qr?: QueryRunner) {
+        const { images, ...rest } = createReportDto;
+
+        const repository = this.getRepository(qr);
+        const createReport = repository.create({
             userId,
-            ...createReportDto,
+            ...rest,
         });
-        return await this.reportRepo.save(createReport);
+        return await repository.save(createReport);
     }
 
     async updateReport(id: number, updateReportDto: UpdateReportDto) {
+        const { images, ...rest } = updateReportDto;
+
         return await this.reportRepo.save({
             id,
-            ...updateReportDto,
+            ...rest,
         });
     }
 
@@ -154,9 +172,15 @@ export class ReportService {
     }
 
     async findByReportId({ id, userId }: { id: number; userId: number }) {
-        return await this.reportRepo.findOneBy({
-            id,
-            userId,
+        return await this.reportRepo.findOne({
+            where: {
+                id,
+                userId,
+            },
+            relations: {
+                images: true,
+            },
+            // ...DEFAULT_REPORT_FIND_OPTIONS,
         });
     }
 
