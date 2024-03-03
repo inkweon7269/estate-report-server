@@ -55,14 +55,6 @@ export class UserEntity extends CommonEntity {
     @Column({ type: 'timestamp', nullable: true })
     currentRefreshTokenExp: Date;
 
-    @Column({
-        nullable: true,
-    })
-    @Transform(({ value }) => value && `/${join(USERS_PUBLIC_IMAGE_PATH, value)}`)
-    @IsOptional()
-    @IsString({ message: stringValidationMessage })
-    image?: string;
-
     /*
         실제 존재하지 않는 프로퍼티를 노출시키는 방법
      */

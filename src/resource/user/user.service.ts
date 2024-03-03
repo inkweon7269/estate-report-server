@@ -46,33 +46,6 @@ export class UserService {
         return responseUser;
     }
 
-    // 사용자 이미지가 성공했을 때m temp -> users로 옮기는 용도로 사용
-    async createUserImage(dto: CreateUserDto) {
-        /**
-         * DTO 이미지 이름을 기반으로 파일 경로를 생성한다.
-         */
-        const tempFilePath = join(TEMP_FOLDER_PATH, dto.image);
-
-        try {
-            // 파일이 존재하는지 확인 존재하지 않는다면 에러를 던짐
-            await promises.access(tempFilePath);
-        } catch (e) {
-            throw new BadRequestException('존재하지 않는 파일입니다.');
-        }
-
-        // 파일의 이름만 가져오기
-        // aaa/bbb/abc.jpg -> abc.jpg
-        const fileName = basename(tempFilePath);
-
-        // 새로 이동할 폴더의 경로 + 이미지 이름
-        const newPath = join(USERS_IMAGE_PATH, fileName);
-
-        // 파일 옮기기
-        await promises.rename(tempFilePath, newPath);
-
-        return true;
-    }
-
     // 비밀번호 암호화
     async hashPassword(password: string) {
         return await bcrypt.hash(password, 11);

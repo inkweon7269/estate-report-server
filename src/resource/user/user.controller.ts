@@ -36,8 +36,6 @@ export class UserController {
     @ApiBody({ type: CreateUserDto })
     @Post('join')
     async postJoin(@Body() createUserDto: CreateUserDto) {
-        await this.userService.createUserImage(createUserDto);
-
         return await this.userService.postJoin(createUserDto);
     }
 
