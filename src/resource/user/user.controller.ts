@@ -9,6 +9,7 @@ import {
     Req,
     Res,
     UploadedFile,
+    UseFilters,
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import { Request, Response } from 'express';
 import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { LogInterceptor } from '@root/common/interceptor/log.interceptor';
+import { HttpExceptionFilter } from '@root/common/exception-filter/http.exception-filter';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -108,9 +110,12 @@ export class UserController {
      *  - 위 개념의 반대
      */
     // @UseInterceptors(ClassSerializerInterceptor)
-    @UseInterceptors(LogInterceptor)
+    // @UseInterceptors(LogInterceptor)
+    @UseFilters(HttpExceptionFilter)
     @Get('profile')
     async getProfile(@User('id') userId: number) {
+        throw new BadRequestException('에러 테스트');
+
         return await this.userService.getProfile(userId);
     }
 }
