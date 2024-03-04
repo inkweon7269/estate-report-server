@@ -111,10 +111,10 @@ export class UserController {
      */
     // @UseInterceptors(ClassSerializerInterceptor)
     // @UseInterceptors(LogInterceptor)
-    @UseFilters(HttpExceptionFilter)
+    // @UseFilters(HttpExceptionFilter)
     @Get('profile')
     async getProfile(@User('id') userId: number) {
-        throw new BadRequestException('에러 테스트');
+        // throw new BadRequestException('에러 테스트');
 
         return await this.userService.getProfile(userId);
     }

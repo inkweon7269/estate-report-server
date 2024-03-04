@@ -29,7 +29,7 @@ async function bootstrap() {
     });
 
     // 전역으로 Http Exception Filter 적용
-    app.useGlobalFilters(new HttpExceptionFilter());
+    // app.useGlobalFilters(new HttpExceptionFilter());
 
     await app.listen(8000);
 }
