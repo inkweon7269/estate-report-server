@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Length, ValidationArguments } from 'class-validator';
 import { CommonEntity } from '@root/common/entities/common.entity';
@@ -7,9 +7,7 @@ import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity
 import { lengthValidationMessage } from '@root/common/validation-message/length-validation.message';
 import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { join } from 'path';
-import { USERS_PUBLIC_IMAGE_PATH } from '@root/common/const/path.const';
-import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
+import { ChatsEntity } from '@root/entities/chats.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -70,4 +68,8 @@ export class UserEntity extends CommonEntity {
 
     @OneToMany(() => ReportUserBridgeEntity, (bridge) => bridge.report)
     reportUserBridge: ReportUserBridgeEntity[];
+
+    @ManyToMany(() => ChatsEntity, (chat) => chat.users)
+    @JoinTable({ name: 'chats_user_bridge' })
+    chats: ChatsEntity[];
 }

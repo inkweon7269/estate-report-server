@@ -14,6 +14,7 @@ import { DateTransformInterceptor } from '@root/interceptors/data-transform.inte
 import { CommonModule } from '@root/common/common.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from '@root/common/const/path.const';
+import { ChatsModule } from '@root/resource/chats/chats.module';
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import { PUBLIC_FOLDER_PATH } from '@root/common/const/path.const';
         ApartModule,
         ReportModule,
         UserModule,
+        ChatsModule,
     ],
     controllers: [AppController],
     providers: [
