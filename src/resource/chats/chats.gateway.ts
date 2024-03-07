@@ -11,13 +11,18 @@ import { Socket, Server } from 'socket.io';
 import { CreateChatDto } from '@root/resource/chats/dtos/create-chat.dto';
 import { ChatsService } from '@root/resource/chats/chats.service';
 import { EnterChatDto } from '@root/resource/chats/dtos/enter-chat.dto';
+import { MessagesService } from '@root/resource/messages/messages.service';
+import { CreateMessagesDto } from '@root/resource/messages/dtos/create-messages.dto';
 
 @WebSocketGateway({
     // ws://localhost:8000/chats
     namespace: 'chats',
 })
 export class ChatsGateway implements OnGatewayConnection {
-    constructor(private readonly chatsService: ChatsService) {}
+    constructor(
+        private readonly chatsService: ChatsService,
+        private readonly messagesService: MessagesService,
+    ) {}
 
     @WebSocketServer()
     server: Server;
@@ -59,7 +64,7 @@ export class ChatsGateway implements OnGatewayConnection {
 
     // socket.on('send_message', (message) => { console.log(message) });
     @SubscribeMessage('send_message')
-    sendMessage(@MessageBody() message: { message: string; chatId: number }, @ConnectedSocket() socket: Socket) {
+    async sendMessage(@MessageBody() dto: CreateMessagesDto, @ConnectedSocket() socket: Socket) {
         // console.log(message);
         // this.server.emit('receive_message', 'hello from server');
 
@@ -67,6 +72,15 @@ export class ChatsGateway implements OnGatewayConnection {
         // this.server.in(message.chatId.toString()).emit('receive_message', message.message);
 
         // Broadcasting : 나를 제외하고 다른 사람에게만 메시지를 보내는 행위
-        socket.to(message.chatId.toString()).emit('receive_message', message.message);
+        // socket.to(message.chatId.toString()).emit('receive_message', message.message);
+
+        const chatExists = await this.chatsService.checkIfChatExists(dto.chatId);
+
+        if (!chatExists) {
+            throw new WsException(`존재하지 않는 채팅방입니다. Chat ID : ${dto.chatId}`);
+        }
+
+        const message = await this.messagesService.createMessage(dto);
+        socket.to(message.chat.id.toString()).emit('receive_message', message.message);
     }
 }

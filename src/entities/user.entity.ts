@@ -8,6 +8,7 @@ import { lengthValidationMessage } from '@root/common/validation-message/length-
 import { emailValidationMessage } from '@root/common/validation-message/email-validation.message';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { ChatsEntity } from '@root/entities/chats.entity';
+import { MessagesEntity } from '@root/entities/messages.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -72,4 +73,7 @@ export class UserEntity extends CommonEntity {
     @ManyToMany(() => ChatsEntity, (chat) => chat.users)
     @JoinTable({ name: 'chats_user_bridge' })
     chats: ChatsEntity[];
+
+    @OneToMany(() => MessagesEntity, (message) => message.author)
+    messages: MessagesEntity[];
 }
