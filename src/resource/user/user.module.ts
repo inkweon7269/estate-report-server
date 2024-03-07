@@ -15,6 +15,7 @@ import { LogMiddleware } from '@root/middleware/log.middleware';
     imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
     controllers: [UserController],
     providers: [UserService],
+    exports: [UserService],
 })
 export class UserModule implements NestModule {
     configure(consumer: MiddlewareConsumer): any {
