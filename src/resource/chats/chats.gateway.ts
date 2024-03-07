@@ -13,6 +13,7 @@ import { ChatsService } from '@root/resource/chats/chats.service';
 import { EnterChatDto } from '@root/resource/chats/dtos/enter-chat.dto';
 import { MessagesService } from '@root/resource/messages/messages.service';
 import { CreateMessagesDto } from '@root/resource/messages/dtos/create-messages.dto';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @WebSocketGateway({
     // ws://localhost:8000/chats
@@ -31,6 +32,16 @@ export class ChatsGateway implements OnGatewayConnection {
         console.log(`on connect called : ${socket.id}`);
     }
 
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: {
+                enableImplicitConversion: true,
+            },
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    )
     @SubscribeMessage('enter_chat')
     async enterChat(
         // 방의 chat ID들을 리스트로 받는다.
@@ -57,12 +68,33 @@ export class ChatsGateway implements OnGatewayConnection {
         socket.join(data.chatIds.map((x) => x.toString()));
     }
 
+    // Socket.io 에서는 글로벌 Validation이 적용되지 않아 다음과 같이 직접 삽입해야 한다.
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: {
+                enableImplicitConversion: true,
+            },
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    )
     @SubscribeMessage('create_chat')
     async createChat(@MessageBody() data: CreateChatDto, @ConnectedSocket() socket: Socket) {
         const chat = await this.chatsService.createChat(data);
     }
 
     // socket.on('send_message', (message) => { console.log(message) });
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: {
+                enableImplicitConversion: true,
+            },
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    )
     @SubscribeMessage('send_message')
     async sendMessage(@MessageBody() dto: CreateMessagesDto, @ConnectedSocket() socket: Socket) {
         // console.log(message);
