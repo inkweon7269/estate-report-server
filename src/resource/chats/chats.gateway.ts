@@ -45,11 +45,12 @@ export class ChatsGateway implements OnGatewayConnection {
             forbidNonWhitelisted: true,
         }),
     )
+    @UseGuards(SocketGuard)
     @SubscribeMessage('enter_chat')
     async enterChat(
         // 방의 chat ID들을 리스트로 받는다.
         @MessageBody() data: EnterChatDto,
-        @ConnectedSocket() socket: Socket,
+        @ConnectedSocket() socket: Socket & { user: UserEntity },
     ) {
         /*for (const chatId of data) {
             // socket.join()
@@ -100,8 +101,9 @@ export class ChatsGateway implements OnGatewayConnection {
             forbidNonWhitelisted: true,
         }),
     )
+    @UseGuards(SocketGuard)
     @SubscribeMessage('send_message')
-    async sendMessage(@MessageBody() dto: CreateMessagesDto, @ConnectedSocket() socket: Socket) {
+    async sendMessage(@MessageBody() dto: CreateMessagesDto, @ConnectedSocket() socket: Socket & { user: UserEntity }) {
         // console.log(message);
         // this.server.emit('receive_message', 'hello from server');
 
@@ -117,7 +119,7 @@ export class ChatsGateway implements OnGatewayConnection {
             throw new WsException(`존재하지 않는 채팅방입니다. Chat ID : ${dto.chatId}`);
         }
 
-        const message = await this.messagesService.createMessage(dto);
+        const message = await this.messagesService.createMessage(dto, socket.user.id);
         socket.to(message.chat.id.toString()).emit('receive_message', message.message);
     }
 }
