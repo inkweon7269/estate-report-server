@@ -2,6 +2,8 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
@@ -25,7 +27,7 @@ import { JwtPayload } from 'jsonwebtoken';
     // ws://localhost:8000/chats
     namespace: 'chats',
 })
-export class ChatsGateway implements OnGatewayConnection {
+export class ChatsGateway implements OnGatewayConnection, OnGatewayInit, OnGatewayDisconnect {
     constructor(
         private readonly chatsService: ChatsService,
         private readonly messagesService: MessagesService,
@@ -34,6 +36,16 @@ export class ChatsGateway implements OnGatewayConnection {
 
     @WebSocketServer()
     server: Server;
+
+    // 게이트웨이가 실행했을 때 동작
+    afterInit(server: any): any {
+        console.log('after gateway init');
+    }
+
+    // 연결이 끊어졌을 때 동작
+    handleDisconnect(socket: Socket): any {
+        console.log(`on disconnect called : ${socket.id}`);
+    }
 
     // Access Token 사용이 만료되었을 때를 대비하여 가드를 사용하지 않고 사용자 정보를 socket 안에 저장
     async handleConnection(socket: Socket & { user: UserEntity } & { token: string }) {
