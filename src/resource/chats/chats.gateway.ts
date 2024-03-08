@@ -13,10 +13,13 @@ import { ChatsService } from '@root/resource/chats/chats.service';
 import { EnterChatDto } from '@root/resource/chats/dtos/enter-chat.dto';
 import { MessagesService } from '@root/resource/messages/messages.service';
 import { CreateMessagesDto } from '@root/resource/messages/dtos/create-messages.dto';
-import { UseFilters, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { SocketCatchHttpExceptionFilter } from '@root/common/exception-filter/socket-catch-http.exception-filter';
 import { SocketGuard } from '@root/auth/guards/socket/socket.guard';
 import { UserEntity } from '@root/entities/user.entity';
+import { UserService } from '@root/resource/user/user.service';
+import * as jwt from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 
 @WebSocketGateway({
     // ws://localhost:8000/chats
@@ -26,13 +29,35 @@ export class ChatsGateway implements OnGatewayConnection {
     constructor(
         private readonly chatsService: ChatsService,
         private readonly messagesService: MessagesService,
+        private readonly userService: UserService,
     ) {}
 
     @WebSocketServer()
     server: Server;
 
-    handleConnection(socket: Socket) {
+    // Access Token 사용이 만료되었을 때를 대비하여 가드를 사용하지 않고 사용자 정보를 socket 안에 저장
+    async handleConnection(socket: Socket & { user: UserEntity } & { token: string }) {
         console.log(`on connect called : ${socket.id}`);
+
+        // Socket Guard 로직을 삽입
+        const headers = socket.handshake.headers;
+        const rawToken = headers['authorization'];
+
+        if (!rawToken) {
+            socket.disconnect();
+            // throw new WsException('토큰이 없습니다!');
+        }
+
+        try {
+            const payload = jwt.verify(rawToken, process.env.JWT_ACCESS_SECRET) as JwtPayload;
+            socket.user = await this.userService.findOneByEmail(payload.email);
+            socket.token = rawToken;
+
+            return true;
+        } catch (e) {
+            socket.disconnect();
+            // throw new WsException('토큰이 유효하지 않습니다.');
+        }
     }
 
     @UsePipes(
@@ -45,7 +70,6 @@ export class ChatsGateway implements OnGatewayConnection {
             forbidNonWhitelisted: true,
         }),
     )
-    @UseGuards(SocketGuard)
     @SubscribeMessage('enter_chat')
     async enterChat(
         // 방의 chat ID들을 리스트로 받는다.
@@ -84,9 +108,9 @@ export class ChatsGateway implements OnGatewayConnection {
         }),
     )
     @UseFilters(SocketCatchHttpExceptionFilter)
-    @UseGuards(SocketGuard)
     @SubscribeMessage('create_chat')
     async createChat(@MessageBody() data: CreateChatDto, @ConnectedSocket() socket: Socket & { user: UserEntity }) {
+        console.log(socket);
         const chat = await this.chatsService.createChat(data);
     }
 
@@ -101,7 +125,6 @@ export class ChatsGateway implements OnGatewayConnection {
             forbidNonWhitelisted: true,
         }),
     )
-    @UseGuards(SocketGuard)
     @SubscribeMessage('send_message')
     async sendMessage(@MessageBody() dto: CreateMessagesDto, @ConnectedSocket() socket: Socket & { user: UserEntity }) {
         // console.log(message);
