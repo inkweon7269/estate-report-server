@@ -10,6 +10,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 import { join } from 'path';
 import { USERS_PUBLIC_IMAGE_PATH } from '@root/common/const/path.const';
 import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
+import { CommentEntity } from '@root/entities/comment.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -70,4 +71,7 @@ export class UserEntity extends CommonEntity {
 
     @OneToMany(() => ReportUserBridgeEntity, (bridge) => bridge.report)
     reportUserBridge: ReportUserBridgeEntity[];
+
+    @OneToMany(() => CommentEntity, (comment) => comment.user)
+    comments: CommentEntity[];
 }

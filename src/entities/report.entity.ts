@@ -7,6 +7,7 @@ import { UserEntity } from '@root/entities/user.entity';
 import { ReportUserBridgeEntity } from '@root/entities/report-user-bridge.entity';
 import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
 import { ImageEntity } from '@root/common/entities/image.entity';
+import { CommentEntity } from '@root/entities/comment.entity';
 
 @Entity({ name: 'report' })
 export class ReportEntity extends CommonEntity {
@@ -153,4 +154,7 @@ export class ReportEntity extends CommonEntity {
 
     @OneToMany((type) => ImageEntity, (image) => image.report)
     images: ImageEntity[];
+
+    @OneToMany(() => CommentEntity, (comment) => comment.user)
+    comments: CommentEntity[];
 }
