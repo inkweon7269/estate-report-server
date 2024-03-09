@@ -200,6 +200,14 @@ export class ReportService {
         });
     }
 
+    async checkReportExistsById(id: number) {
+        return this.reportRepo.exist({
+            where: {
+                id,
+            },
+        });
+    }
+
     calcScore(report) {
         const {
             atm,

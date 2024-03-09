@@ -38,6 +38,8 @@ export class CommentService {
             },
         });
 
+        console.log(comment);
+
         if (!comment) {
             throw new BadRequestException(`id: ${id} Comment는 존재하지 않습니다.`);
         }
