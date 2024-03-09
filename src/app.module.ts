@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeormConfig } from '@root/configs/typeorm.config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from '@root/interceptors/logging.interceptor';
 import { AppService } from '@root/app.service';
 import { AreaModule } from '@root/resource/area/area.module';
@@ -15,6 +15,8 @@ import { CommonModule } from '@root/common/common.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from '@root/common/const/path.const';
 import { CommentModule } from '@root/resource/comment/comment.module';
+import { RolesGuard } from '@root/common/guard/roles.guard';
+import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 
 @Module({
     imports: [
@@ -47,6 +49,8 @@ import { CommentModule } from '@root/resource/comment/comment.module';
         // { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
         { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
         // { provide: APP_INTERCEPTOR, useClass: DateTransformInterceptor },
+        { provide: APP_GUARD, useClass: JwtServiceAuthGuard },
+        // { provide: APP_GUARD, useClass: RolesGuard },
     ],
 })
 export class AppModule {}

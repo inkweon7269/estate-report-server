@@ -15,17 +15,12 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from '@root/resource/user/user.service';
-import { CreateUserDto, LoginUserDto, RefreshTokenDto } from '@root/resource/user/dtos/user.dto';
-import { LocalServiceAuthGuard } from '@root/auth/guards/local-service.guard';
+import { CreateUserDto, LoginUserDto } from '@root/resource/user/dtos/user.dto';
 import { AuthService } from '@root/auth/auth.service';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User } from '@root/auth/auth.decorator';
-import { UserEntity } from '@root/entities/user.entity';
 import { Request, Response } from 'express';
-import { JwtRefreshGuard } from '@root/auth/guards/jwt-refresh.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { LogInterceptor } from '@root/common/interceptor/log.interceptor';
-import { HttpExceptionFilter } from '@root/common/exception-filter/http.exception-filter';
+import { Public } from '@root/common/decorator/is-public.decorator';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -37,6 +32,7 @@ export class UserController {
 
     @ApiOperation({ summary: '회원가입', description: '회원가입합니다.' })
     @ApiBody({ type: CreateUserDto })
+    @Public()
     @Post('join')
     async postJoin(@Body() createUserDto: CreateUserDto) {
         return await this.userService.postJoin(createUserDto);
@@ -44,6 +40,7 @@ export class UserController {
 
     @ApiOperation({ summary: '로그인', description: '로그인을 합니다.' })
     @ApiBody({ type: LoginUserDto })
+    @Public()
     @Post('login')
     async postLogin(@Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
         const user = await this.authService.validateServiceUser(loginUserDto.email, loginUserDto.password);
@@ -89,7 +86,6 @@ export class UserController {
     // https://velog.io/@from_numpy/NestJS-How-to-implement-Refresh-Token-with-JWT
     @ApiOperation({ summary: '로그아웃' })
     // @UseGuards(JwtRefreshGuard)
-    @UseGuards(JwtServiceAuthGuard)
     @Post('logout')
     async logout(@User('id') userId: number, @Res({ passthrough: true }) res: Response) {
         await this.userService.removeRefreshToken(userId);
@@ -99,7 +95,6 @@ export class UserController {
     }
 
     @ApiOperation({ summary: '내 정보 조회', description: '사용자 아이디와 메일 정보를 조회합니다.' })
-    @UseGuards(JwtServiceAuthGuard)
     /**
      * serialization
      *  - 직렬화

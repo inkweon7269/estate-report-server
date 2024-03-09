@@ -34,7 +34,6 @@ import { ReportImagesService } from '@root/resource/report/images.service';
 import { TransactionInterceptor } from '@root/common/interceptor/transaction.interceptor';
 import { QueryRunner } from '@root/common/decorator/query-runner.decorator';
 
-@UseGuards(JwtServiceAuthGuard)
 @Controller('v1/report')
 export class ReportController {
     constructor(

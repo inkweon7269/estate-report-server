@@ -5,8 +5,9 @@ import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { CreateCommentDto, UpdateCommentDto } from '@root/resource/comment/dtos/comment.dto';
 import { User } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
+import { Roles } from '@root/common/decorator/roles.decorator';
+import { RolesEnum } from '@root/common/const/roles.const';
 
-@UseGuards(JwtServiceAuthGuard)
 @Controller('v1/report/:reportId/comment')
 export class CommentController {
     constructor(private readonly commentService: CommentService) {}
@@ -35,6 +36,7 @@ export class CommentController {
         return await this.commentService.updateComment(commentId, body);
     }
 
+    @Roles(RolesEnum.ADMIN)
     @Delete(':commentId')
     async deleteComment(@Param('commentId', ParseIntPipe) commentId: number) {
         return await this.commentService.deleteComment(commentId);
