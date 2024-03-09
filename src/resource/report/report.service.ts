@@ -171,12 +171,20 @@ export class ReportService {
         return result.affected ? true : false;
     }
 
-    async findByReportId({ id, userId, queryRunner }: { id: number; userId: number; queryRunner?: QueryRunner }) {
+    async findByReportId({
+        reportId,
+        userId,
+        queryRunner,
+    }: {
+        reportId: number;
+        userId: number;
+        queryRunner?: QueryRunner;
+    }) {
         const repository = this.getRepository(queryRunner);
 
         return await repository.findOne({
             where: {
-                id,
+                id: reportId,
                 userId,
             },
             relations: {

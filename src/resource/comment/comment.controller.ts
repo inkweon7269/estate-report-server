@@ -7,6 +7,7 @@ import { User } from '@root/auth/auth.decorator';
 import { UserEntity } from '@root/entities/user.entity';
 import { Roles } from '@root/common/decorator/roles.decorator';
 import { RolesEnum } from '@root/common/const/roles.const';
+import { IsCommentMineOrAdminGuard } from '@root/common/guard/is-comment-mine-or-admin.guard';
 
 @Controller('v1/report/:reportId/comment')
 export class CommentController {
@@ -36,7 +37,8 @@ export class CommentController {
         return await this.commentService.updateComment(commentId, body);
     }
 
-    @Roles(RolesEnum.ADMIN)
+    // @Roles(RolesEnum.ADMIN)
+    @UseGuards(IsCommentMineOrAdminGuard)
     @Delete(':commentId')
     async deleteComment(@Param('commentId', ParseIntPipe) commentId: number) {
         return await this.commentService.deleteComment(commentId);

@@ -33,6 +33,7 @@ import { DataSource, QueryRunner as QR } from 'typeorm';
 import { ReportImagesService } from '@root/resource/report/images.service';
 import { TransactionInterceptor } from '@root/common/interceptor/transaction.interceptor';
 import { QueryRunner } from '@root/common/decorator/query-runner.decorator';
+import { IsReportMineOrAdminGuard } from '@root/common/guard/is-report-mine-or-admin.guard';
 
 @Controller('v1/report')
 export class ReportController {
@@ -47,7 +48,7 @@ export class ReportController {
     @ApiBody({ type: CreateLikeDto })
     @Post('like')
     async createLike(@User('id') userId: number, @Body() createLikeDto: CreateLikeDto) {
-        const report = await this.reportService.findByReportId({ id: createLikeDto.reportId, userId });
+        const report = await this.reportService.findByReportId({ reportId: createLikeDto.reportId, userId });
 
         if (!report) {
             throw new NotFoundException('존재하지 않는 보고서입니다.');
@@ -95,15 +96,15 @@ export class ReportController {
 
     @ApiOperation({ summary: '보고서 상세 정보 조회', description: '보고서 상세 정보를 가져온다.' })
     @ApiParam({
-        name: 'id',
+        name: 'reportId',
         description: '보고서 아이디',
         example: 8,
         required: true,
     })
-    @Get(':id')
-    async getReport(@User('id') userId: number, @Param('id', ParseIntPipe) id: number) {
+    @Get(':reportId')
+    async getReport(@User('id') userId: number, @Param('reportId', ParseIntPipe) reportId: number) {
         const found = await this.reportService.findByReportId({
-            id,
+            reportId,
             userId,
         });
 
@@ -111,7 +112,7 @@ export class ReportController {
             throw new NotFoundException('해당 보고서를 찾을 수 없습니다.');
         }
 
-        return await this.reportService.getReport(id);
+        return await this.reportService.getReport(reportId);
     }
 
     @ApiOperation({ summary: '보고서 생성', description: '보고서를 생성합니다.' })
@@ -154,53 +155,33 @@ export class ReportController {
             }
         }
 
-        return await this.reportService.findByReportId({ id: report.id, userId, queryRunner });
+        return await this.reportService.findByReportId({ reportId: report.id, userId, queryRunner });
     }
 
     @ApiOperation({ summary: '보고서 수정', description: '보고서를 수정합니다.' })
     @ApiParam({
-        name: 'id',
+        name: 'reportId',
         description: '보고서 아이디',
         example: 8,
         required: true,
     })
     @ApiBody({ type: UpdateReportDto })
-    @Put(':id')
-    async updateReport(
-        @User('id') userId: number,
-        @Param('id', ParseIntPipe) id: number,
-        @Body() updateReportDto: UpdateReportDto,
-    ) {
-        const found = await this.reportService.findByReportId({
-            id,
-            userId,
-        });
-
-        if (!found) {
-            throw new NotFoundException('해당 보고서를 찾을 수 없습니다.');
-        }
-
-        return await this.reportService.updateReport(id, updateReportDto);
+    @UseGuards(IsReportMineOrAdminGuard)
+    @Put(':reportId')
+    async updateReport(@Param('reportId', ParseIntPipe) reportId: number, @Body() updateReportDto: UpdateReportDto) {
+        return await this.reportService.updateReport(reportId, updateReportDto);
     }
 
     @ApiOperation({ summary: '보고서 삭제', description: '보고서를 삭제합니다.' })
     @ApiParam({
-        name: 'id',
+        name: 'reportId',
         description: '보고서 아이디',
         example: 8,
         required: true,
     })
-    @Delete(':id')
-    async deleteReport(@User('id') userId: number, @Param('id', ParseIntPipe) id: number) {
-        const found = await this.reportService.findByReportId({
-            id,
-            userId,
-        });
-
-        if (!found) {
-            throw new NotFoundException('해당 보고서를 찾을 수 없습니다.');
-        }
-
-        return await this.reportService.deleteReport({ userId, reportId: id });
+    @UseGuards(IsReportMineOrAdminGuard)
+    @Delete(':reportId')
+    async deleteReport(@User('id') userId: number, @Param('reportId', ParseIntPipe) reportId: number) {
+        return await this.reportService.deleteReport({ userId, reportId });
     }
 }
