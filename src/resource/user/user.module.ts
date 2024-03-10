@@ -10,9 +10,10 @@ import * as multer from 'multer';
 import { USERS_IMAGE_PATH } from '@root/common/const/path.const';
 import { v4 as uuid } from 'uuid';
 import { LogMiddleware } from '@root/middleware/log.middleware';
+import { UserFollowersEntity } from '@root/entities/user-followers.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
+    imports: [TypeOrmModule.forFeature([UserEntity, UserFollowersEntity]), AuthModule],
     controllers: [UserController],
     providers: [UserService],
 })

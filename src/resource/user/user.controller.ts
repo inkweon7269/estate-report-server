@@ -4,8 +4,15 @@ import {
     ClassSerializerInterceptor,
     ConflictException,
     Controller,
+    DefaultValuePipe,
+    Delete,
     Get,
+    Param,
+    ParseBoolPipe,
+    ParseIntPipe,
+    Patch,
     Post,
+    Query,
     Req,
     Res,
     UploadedFile,
@@ -13,7 +20,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserService } from '@root/resource/user/user.service';
 import { CreateUserDto, LoginUserDto } from '@root/resource/user/dtos/user.dto';
 import { AuthService } from '@root/auth/auth.service';
@@ -21,6 +28,7 @@ import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
 import { User } from '@root/auth/auth.decorator';
 import { Request, Response } from 'express';
 import { Public } from '@root/common/decorator/is-public.decorator';
+import { UserEntity } from '@root/entities/user.entity';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -112,5 +120,50 @@ export class UserController {
         // throw new BadRequestException('에러 테스트');
 
         return await this.userService.getProfile(userId);
+    }
+
+    @ApiOperation({ summary: '나를 구독한 사람 조회' })
+    @Get('follow/me')
+    async getFollow(
+        @User('id') userId: number,
+        @Query('includeNotConfirmed', new DefaultValuePipe(false), ParseBoolPipe) includeNotConfirmed: boolean,
+    ) {
+        return await this.userService.getFollowers(userId, includeNotConfirmed);
+    }
+
+    @ApiOperation({ summary: '특정인 구독하기' })
+    @ApiParam({
+        name: 'followeeId',
+        description: '내가 구독할 사람 아이디',
+        example: 8,
+        required: true,
+    })
+    @Post('follow/:followeeId')
+    async postFollow(@User('id') userId: number, @Param('followeeId', ParseIntPipe) followeeId: number) {
+        await this.userService.followUser(userId, followeeId);
+    }
+
+    @ApiOperation({ summary: '구독 승인' })
+    @ApiParam({
+        name: 'followerId',
+        description: '나에게 구독을 신청한 사람 아이디',
+        example: 8,
+        required: true,
+    })
+    @Patch('follow/:followerId/confirm')
+    async patchFollowConfirm(@User() user: UserEntity, @Param('followerId', ParseIntPipe) followerId: number) {
+        return await this.userService.confirmFollow(followerId, user.id);
+    }
+
+    @ApiOperation({ summary: '구독 취소' })
+    @ApiParam({
+        name: 'followeeId',
+        description: '내가 구독을 요청한 사람 구독 취소',
+        example: 8,
+        required: true,
+    })
+    @Delete('follow/:followeeId')
+    async deleteFollow(@User() user: UserEntity, @Param('followeeId', ParseIntPipe) followeeId: number) {
+        return await this.userService.deleteFollow(user.id, followeeId);
     }
 }

@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Length, ValidationArguments } from 'class-validator';
 import { CommonEntity } from '@root/common/entities/common.entity';
@@ -11,6 +11,7 @@ import { join } from 'path';
 import { USERS_PUBLIC_IMAGE_PATH } from '@root/common/const/path.const';
 import { stringValidationMessage } from '@root/common/validation-message/string-validation.message';
 import { CommentEntity } from '@root/entities/comment.entity';
+import { UserFollowersEntity } from '@root/entities/user-followers.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonEntity {
@@ -74,4 +75,15 @@ export class UserEntity extends CommonEntity {
 
     @OneToMany(() => CommentEntity, (comment) => comment.user)
     comments: CommentEntity[];
+
+    /**
+     * Followers, Followees
+     */
+    // 나를 구독한 사람
+    @OneToMany(() => UserFollowersEntity, (ufm) => ufm.follower)
+    followers: UserFollowersEntity[];
+
+    // 내가 구독한 사람
+    @OneToMany(() => UserFollowersEntity, (ufm) => ufm.followee)
+    followees: UserFollowersEntity[];
 }
