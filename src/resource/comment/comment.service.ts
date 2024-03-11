@@ -3,7 +3,7 @@ import { CommonService } from '@root/common/common.service';
 import { PaginateCommentsDto } from '@root/resource/comment/dtos/paginate-comments.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from '@root/entities/comment.entity';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { UserEntity } from '@root/entities/user.entity';
 import { CreateCommentDto, UpdateCommentDto } from '@root/resource/comment/dtos/comment.dto';
 import { DEFAULT_COMMENT_FIND_OPTIONS } from '@root/resource/comment/const/default-comment-find-options.const';
@@ -15,6 +15,10 @@ export class CommentService {
         private readonly commentRepo: Repository<CommentEntity>,
         private readonly commonService: CommonService,
     ) {}
+
+    getRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<CommentEntity>(CommentEntity) : this.commentRepo;
+    }
 
     paginateComments(reportId: number, dto: PaginateCommentsDto) {
         return this.commonService.paginate(
@@ -47,8 +51,10 @@ export class CommentService {
         return comment;
     }
 
-    async createComment(user: UserEntity, reportId: number, dto: CreateCommentDto) {
-        return await this.commentRepo.save({
+    async createComment(user: UserEntity, reportId: number, dto: CreateCommentDto, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        return await repository.save({
             ...dto,
             user,
             reportId,
@@ -68,8 +74,10 @@ export class CommentService {
         return await this.commentRepo.save(comment);
     }
 
-    async deleteComment(id: number) {
-        const comment = await this.commentRepo.findOne({
+    async deleteComment(id: number, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        const comment = await repository.findOne({
             where: {
                 id,
             },
@@ -79,7 +87,7 @@ export class CommentService {
             throw new BadRequestException('존재하지 않는 댓글입니다.');
         }
 
-        await this.commentRepo.softDelete(id);
+        await repository.softDelete(id);
 
         return id;
     }

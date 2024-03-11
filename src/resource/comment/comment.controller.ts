@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Query,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { PaginateCommentsDto } from '@root/resource/comment/dtos/paginate-comments.dto';
 import { JwtServiceAuthGuard } from '@root/auth/guards/jwt-service.guard';
@@ -8,10 +20,17 @@ import { UserEntity } from '@root/entities/user.entity';
 import { Roles } from '@root/common/decorator/roles.decorator';
 import { RolesEnum } from '@root/common/const/roles.const';
 import { IsCommentMineOrAdminGuard } from '@root/common/guard/is-comment-mine-or-admin.guard';
+import { QueryRunner as QR } from 'typeorm';
+import { QueryRunner } from '@root/common/decorator/query-runner.decorator';
+import { TransactionInterceptor } from '@root/common/interceptor/transaction.interceptor';
+import { ReportService } from '@root/resource/report/report.service';
 
 @Controller('v1/report/:reportId/comment')
 export class CommentController {
-    constructor(private readonly commentService: CommentService) {}
+    constructor(
+        private readonly commentService: CommentService,
+        private readonly reportService: ReportService,
+    ) {}
 
     @Get()
     getComments(@Param('reportId', ParseIntPipe) reportId: number, @Query() query: PaginateCommentsDto) {
@@ -23,13 +42,18 @@ export class CommentController {
         return this.commentService.getCommentById(commentId);
     }
 
+    @UseInterceptors(TransactionInterceptor)
     @Post()
-    postComment(
+    async postComment(
         @User() user: UserEntity,
         @Param('reportId', ParseIntPipe) reportId: number,
         @Body() body: CreateCommentDto,
+        @QueryRunner() qr: QR,
     ) {
-        return this.commentService.createComment(user, reportId, body);
+        const res = await this.commentService.createComment(user, reportId, body, qr);
+        await this.reportService.incrementComment(reportId, qr);
+
+        return res;
     }
 
     @Patch(':commentId')
@@ -39,8 +63,16 @@ export class CommentController {
 
     // @Roles(RolesEnum.ADMIN)
     @UseGuards(IsCommentMineOrAdminGuard)
+    @UseInterceptors(TransactionInterceptor)
     @Delete(':commentId')
-    async deleteComment(@Param('commentId', ParseIntPipe) commentId: number) {
-        return await this.commentService.deleteComment(commentId);
+    async deleteComment(
+        @Param('reportId', ParseIntPipe) reportId: number,
+        @Param('commentId', ParseIntPipe) commentId: number,
+        @QueryRunner() qr: QR,
+    ) {
+        const res = await this.commentService.deleteComment(commentId);
+        await this.reportService.decrementCommentCount(reportId, qr);
+
+        return res;
     }
 }

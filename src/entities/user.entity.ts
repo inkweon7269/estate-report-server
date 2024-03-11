@@ -86,4 +86,10 @@ export class UserEntity extends CommonEntity {
     // 내가 구독한 사람
     @OneToMany(() => UserFollowersEntity, (ufm) => ufm.followee)
     followees: UserFollowersEntity[];
+
+    @Column({ default: 0 })
+    followerCount: number;
+
+    @Column({ default: 0 })
+    followeeCount: number;
 }

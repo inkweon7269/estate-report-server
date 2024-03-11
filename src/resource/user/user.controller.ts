@@ -29,6 +29,9 @@ import { User } from '@root/auth/auth.decorator';
 import { Request, Response } from 'express';
 import { Public } from '@root/common/decorator/is-public.decorator';
 import { UserEntity } from '@root/entities/user.entity';
+import { QueryRunner as QR } from 'typeorm';
+import { QueryRunner } from '@root/common/decorator/query-runner.decorator';
+import { TransactionInterceptor } from '@root/common/interceptor/transaction.interceptor';
 
 @ApiTags('사용자')
 @Controller('v1/user')
@@ -150,9 +153,17 @@ export class UserController {
         example: 8,
         required: true,
     })
+    @UseInterceptors(TransactionInterceptor)
     @Patch('follow/:followerId/confirm')
-    async patchFollowConfirm(@User() user: UserEntity, @Param('followerId', ParseIntPipe) followerId: number) {
-        return await this.userService.confirmFollow(followerId, user.id);
+    async patchFollowConfirm(
+        @User() user: UserEntity,
+        @Param('followerId', ParseIntPipe) followerId: number,
+        @QueryRunner() qr: QR,
+    ) {
+        await this.userService.confirmFollow(followerId, user.id, qr);
+        await this.userService.incrementFollowerCount(user.id, qr);
+
+        return true;
     }
 
     @ApiOperation({ summary: '구독 취소' })
@@ -162,8 +173,16 @@ export class UserController {
         example: 8,
         required: true,
     })
+    @UseInterceptors(TransactionInterceptor)
     @Delete('follow/:followeeId')
-    async deleteFollow(@User() user: UserEntity, @Param('followeeId', ParseIntPipe) followeeId: number) {
-        return await this.userService.deleteFollow(user.id, followeeId);
+    async deleteFollow(
+        @User() user: UserEntity,
+        @Param('followeeId', ParseIntPipe) followeeId: number,
+        @QueryRunner() qr: QR,
+    ) {
+        await this.userService.deleteFollow(user.id, followeeId, qr);
+        await this.userService.decrementFollowerCount(user.id, qr);
+
+        return true;
     }
 }

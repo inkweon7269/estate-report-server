@@ -135,6 +135,9 @@ export class ReportEntity extends CommonEntity {
     @Column({ nullable: true })
     memo: string;
 
+    @Column({ default: 0 })
+    commentCount: number;
+
     @ManyToOne(() => UserEntity, (user) => user.reportList, {
         createForeignKeyConstraints: false,
         nullable: false,

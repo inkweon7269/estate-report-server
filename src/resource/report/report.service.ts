@@ -81,6 +81,7 @@ export class ReportService {
                 },
                 isLike: item.reportUserBridge.some((item) => item.userId === userId),
                 likeList: item.reportUserBridge,
+                commentCount: item.commentCount,
             })),
             page,
             ...calcListTotalCount(count, Number(limit)),
@@ -124,6 +125,30 @@ export class ReportService {
 
     getRepository(qr?: QueryRunner) {
         return qr ? qr.manager.getRepository<ReportEntity>(ReportEntity) : this.reportRepo;
+    }
+
+    async incrementComment(reportId: number, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        await repository.increment(
+            {
+                id: reportId,
+            },
+            'commentCount',
+            1,
+        );
+    }
+
+    async decrementCommentCount(reportId: number, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        await repository.decrement(
+            {
+                id: reportId,
+            },
+            'commentCount',
+            1,
+        );
     }
 
     async createReport(userId: number, createReportDto: CreateReportDto, qr?: QueryRunner) {

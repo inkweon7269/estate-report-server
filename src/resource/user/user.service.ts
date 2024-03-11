@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@root/entities/user.entity';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { CreateUserDto } from '@root/resource/user/dtos/user.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
@@ -20,6 +20,14 @@ export class UserService {
 
         private readonly configService: ConfigService,
     ) {}
+
+    getUserRepo(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<UserEntity>(UserEntity) : this.userRepo;
+    }
+
+    getUserFollowRepo(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<UserFollowersEntity>(UserFollowersEntity) : this.userFollowersRepo;
+    }
 
     async getProfile(userId: number) {
         const user = await this.userRepo.findOne({
@@ -50,8 +58,10 @@ export class UserService {
         return responseUser;
     }
 
-    async followUser(followerId: number, followeeId: number) {
-        const result = await this.userFollowersRepo.save({
+    async followUser(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepo = this.getUserFollowRepo(qr);
+
+        await userFollowersRepo.save({
             follower: {
                 id: followerId,
             },
@@ -89,8 +99,10 @@ export class UserService {
         }));
     }
 
-    async confirmFollow(followerId: number, followeeId: number) {
-        const existing = await this.userFollowersRepo.findOne({
+    async confirmFollow(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepo = this.getUserFollowRepo(qr);
+
+        const existing = await userFollowersRepo.findOne({
             where: {
                 follower: {
                     id: followerId,
@@ -109,7 +121,7 @@ export class UserService {
             throw new BadRequestException('존재하지 않는 팔로우 요청입니다.');
         }
 
-        await this.userFollowersRepo.save({
+        await userFollowersRepo.save({
             ...existing,
             isConfirmed: true,
         });
@@ -117,10 +129,10 @@ export class UserService {
         return true;
     }
 
-    async deleteFollow(followerId: number, followeeId: number) {
-        console.log(followeeId, followerId);
+    async deleteFollow(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepo = this.getUserFollowRepo(qr);
 
-        await this.userFollowersRepo.delete({
+        await userFollowersRepo.delete({
             follower: {
                 id: followerId,
             },
@@ -130,6 +142,30 @@ export class UserService {
         });
 
         return true;
+    }
+
+    async incrementFollowerCount(userId: number, qr?: QueryRunner) {
+        const userRepo = this.getUserRepo(qr);
+
+        await userRepo.increment(
+            {
+                id: userId,
+            },
+            'followerCount',
+            1,
+        );
+    }
+
+    async decrementFollowerCount(userId: number, qr?: QueryRunner) {
+        const userRepo = this.getUserRepo(qr);
+
+        await userRepo.decrement(
+            {
+                id: userId,
+            },
+            'followerCount',
+            1,
+        );
     }
 
     // 비밀번호 암호화
