@@ -8,10 +8,6 @@ export class UserRepository extends Repository<UserEntity> {
         super(UserEntity, dataSource.createEntityManager());
     }
 
-    async findAll() {
-        return await this.find();
-    }
-
     async findById(id: number) {
         return await this.findOne({
             where: {
@@ -24,15 +20,6 @@ export class UserRepository extends Repository<UserEntity> {
         return await this.findOne({
             where: {
                 email,
-            },
-        });
-    }
-
-    async findByIdAndRefresh(id: number, refreshToken: string) {
-        return await this.findOne({
-            where: {
-                id,
-                refreshToken,
             },
         });
     }

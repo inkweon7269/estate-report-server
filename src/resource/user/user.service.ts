@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../auth/dto/auth.dto';
@@ -6,10 +6,6 @@ import { CreateUserDto } from '../auth/dto/auth.dto';
 @Injectable()
 export class UserService {
     constructor(private readonly userRepo: UserRepository) {}
-
-    async getUsers() {
-        return await this.userRepo.findAll();
-    }
 
     async postUser(createUserDto: CreateUserDto) {
         const existingUser = await this.findByEmail(createUserDto.email);
@@ -25,8 +21,14 @@ export class UserService {
         return await this.userRepo.save(createUser);
     }
 
-    async deleteUser(id: number) {
-        return await this.userRepo.delete({ id });
+    async getProfile(userId: number) {
+        const user = await this.userRepo.findById(userId);
+
+        if (!user) {
+            throw new NotFoundException('존재하지 않는 사용자입니다.');
+        }
+
+        return user;
     }
 
     async findByEmail(email: string) {

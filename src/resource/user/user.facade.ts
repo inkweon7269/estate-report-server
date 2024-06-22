@@ -6,12 +6,8 @@ import { UserResponseDto } from './dto/user.response.dto';
 export class UserFacade {
     constructor(private readonly userService: UserService) {}
 
-    async getUsers() {
-        const users = await this.userService.getUsers();
-        return users.map((user) => UserResponseDto.of(user));
-    }
-
-    async deleteUser(id: number) {
-        return await this.userService.deleteUser(id);
+    async getProfile(userId: number) {
+        const user = await this.userService.getProfile(userId);
+        return UserResponseDto.of(user);
     }
 }
