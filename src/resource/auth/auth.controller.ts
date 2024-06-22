@@ -1,12 +1,11 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthFacade } from './auth.facade';
-import { CreateUserDto } from '../user/dto/user.dto';
 import { Public } from '../../common/decorators/public.decorator';
-import { LoginUserDto } from './dto/auth.dto';
-import { LocalServiceAuthGuard } from '../../common/guards/local-service.guard';
+import { CreateUserDto, LoginUserDto } from './dto/auth.dto';
+import { LocalServiceAuthGuard } from './guards/local-service.guard';
 import { Request, Response } from 'express';
-import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @ApiTags('Auth')
 @Controller('auth')

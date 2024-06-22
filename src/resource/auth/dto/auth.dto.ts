@@ -21,7 +21,7 @@ export class UserDto {
     email: string;
 }
 
-export class LoginUserDto {
+export class CreateUserDto {
     @ApiProperty({
         example: 'dev123@gmail.com',
         description: '사용자 이메일',
@@ -41,3 +41,5 @@ export class LoginUserDto {
     @IsString({ message: '비밀번호는 String 타입을 입력해야 합니다.' })
     password: string;
 }
+
+export class LoginUserDto extends CreateUserDto {}
