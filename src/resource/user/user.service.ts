@@ -47,4 +47,34 @@ export class UserService {
 
         return existingUser;
     }
+
+    async validateServiceRefresh(id: number, refreshToken: string): Promise<any> {
+        const existingUser = await this.userRepo.findById(id);
+
+        if (!existingUser) {
+            throw new ForbiddenException('등록되지 않은 사용자입니다.');
+        }
+
+        const isRefreshTokenMatching = await bcrypt.compare(refreshToken, existingUser.refreshToken);
+
+        if (!isRefreshTokenMatching) {
+            throw new ForbiddenException('Refresh 토큰이 일치하지 않습니다.');
+        }
+
+        return existingUser;
+    }
+
+    async updateRefreshToken(id: number, refreshToken: string, refreshTokenExp: Date) {
+        await this.userRepo.update(id, {
+            refreshToken,
+            refreshTokenExp,
+        });
+    }
+
+    async removeRefreshToken(id: number) {
+        await this.userRepo.update(id, {
+            refreshToken: null,
+            refreshTokenExp: null,
+        });
+    }
 }

@@ -27,4 +27,13 @@ export class UserRepository extends Repository<UserEntity> {
             },
         });
     }
+
+    async findByIdAndRefresh(id: number, refreshToken: string) {
+        return await this.findOne({
+            where: {
+                id,
+                refreshToken,
+            },
+        });
+    }
 }

@@ -24,6 +24,12 @@ export class UserEntity extends CommonWithUpdateAndDeleteEntity {
     @Column({ length: 255 })
     password: string;
 
+    @Column({ nullable: true })
+    refreshToken: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    refreshTokenExp: Date;
+
     @OneToMany(() => ReportEntity, (report) => report.user, {
         cascade: ['remove', 'soft-remove'],
     })

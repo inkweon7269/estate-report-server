@@ -6,6 +6,7 @@ import { initializeTransactionalContext } from 'typeorm-transactional';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
     initializeTransactionalContext();
@@ -23,6 +24,7 @@ async function bootstrap() {
     );
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalInterceptors(new TimeoutInterceptor());
+    app.use(cookieParser());
 
     app.enableCors({
         origin: true,

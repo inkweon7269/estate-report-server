@@ -17,6 +17,26 @@ export class AuthFacade {
     }
 
     async loginUser(user: UserDto) {
-        return await this.authService.generateAccessToken(user);
+        const { accessToken } = await this.authService.generateAccessToken(user);
+        const { refreshToken } = await this.authService.generateRefreshToken(user);
+        const { hashedRefreshToken, refreshTokenExp } = await this.authService.setRefreshToken(refreshToken);
+
+        await this.userService.updateRefreshToken(user.id, hashedRefreshToken, refreshTokenExp);
+
+        return {
+            accessToken,
+            refreshToken,
+        };
+    }
+
+    async refresh(user) {
+        const { accessToken } = await this.authService.generateAccessToken(user);
+        return {
+            accessToken,
+        };
+    }
+
+    async logout(user) {
+        await this.userService.removeRefreshToken(user.id);
     }
 }

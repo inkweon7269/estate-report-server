@@ -6,12 +6,16 @@ import { JwtServiceStrategy } from './strategies/jwt-service.strategy';
 import { JwtServiceAuthGuard } from './guards/jwt-service.guard';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../resource/user/user.module';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @Module({
     imports: [PassportModule.register({ session: false }), UserModule],
     providers: [
         LocalServiceStrategy,
         JwtServiceStrategy,
+        JwtRefreshStrategy,
+        JwtRefreshGuard,
         { provide: APP_GUARD, useClass: JwtServiceAuthGuard },
         { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
     ],
