@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { ReportEntity } from '../../entities/report.entity';
+import { ReportEntity } from '../../domain/report/entity/report.entity';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateReportDto, UpdateReportDto } from './dto/report.dto';
 import { EntityExistsPipe } from '../../common/pipes/entity-exists.pipe';

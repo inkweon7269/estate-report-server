@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, FindManyOptions, Repository } from 'typeorm';
-import { ReportEntity } from '../../entities/report.entity';
-import { getSkip } from '../../common/common.function';
+import { ReportEntity } from '../entity/report.entity';
+import { getSkip } from '../../../common/common.function';
 
 @Injectable()
 export class ReportRepository extends Repository<ReportEntity> {

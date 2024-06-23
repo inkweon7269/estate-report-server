@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
-import { CommonWithUpdateAndDeleteEntity } from '../common/common.entity';
-import { ReportEntity } from './report.entity';
+import { CommonWithUpdateAndDeleteEntity } from '../../../common/common.entity';
+import { ReportEntity } from '../../report/entity/report.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonWithUpdateAndDeleteEntity {

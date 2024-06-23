@@ -20,7 +20,7 @@ export class AuthFacade {
         const { refreshToken } = await this.authService.generateRefreshToken(user);
         const { hashedRefreshToken, refreshTokenExp } = await this.authService.setRefreshToken(refreshToken);
 
-        await this.userService.updateRefreshToken(user.id, hashedRefreshToken, refreshTokenExp);
+        await this.authService.updateRefreshToken(user.id, hashedRefreshToken, refreshTokenExp);
 
         return {
             accessToken,
@@ -36,6 +36,6 @@ export class AuthFacade {
     }
 
     async logout(user) {
-        await this.userService.removeRefreshToken(user.id);
+        await this.authService.removeRefreshToken(user.id);
     }
 }

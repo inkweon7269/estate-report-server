@@ -11,6 +11,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtServiceAuthGuard } from './guards/jwt-service.guard';
 import { PassportModule } from '@nestjs/passport';
+import { UserRepository } from '../../domain/user/repository/user.repository';
 
 @Module({
     imports: [
@@ -35,6 +36,7 @@ import { PassportModule } from '@nestjs/passport';
         JwtRefreshGuard,
         AuthService,
         AuthFacade,
+        UserRepository,
         { provide: APP_GUARD, useClass: JwtServiceAuthGuard },
     ],
 })

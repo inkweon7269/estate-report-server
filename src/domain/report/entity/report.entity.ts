@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { CommonWithUpdateAndDeleteEntity } from '../common/common.entity';
+import { CommonWithUpdateAndDeleteEntity } from '../../../common/common.entity';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserEntity } from './user.entity';
+import { UserEntity } from '../../user/entity/user.entity';
 
 @Entity({ name: 'report' })
 export class ReportEntity extends CommonWithUpdateAndDeleteEntity {
