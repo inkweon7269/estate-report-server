@@ -55,7 +55,7 @@ export class ReportEntity extends CommonWithUpdateAndDeleteEntity {
     atm: number;
 
     @Column({ comment: '이 아파트는 주변에는 병원, 학원 등이 주로 들어와있습니다.', nullable: true })
-    memo: string;
+    memo?: string;
 
     @ApiProperty({
         description: '점수 합계',

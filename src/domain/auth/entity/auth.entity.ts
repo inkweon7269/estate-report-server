@@ -7,11 +7,11 @@ export class AuthEntity extends CommonEntity {
     @Column({ name: 'userId', unique: true })
     userId: number;
 
-    @Column({ nullable: true })
-    refreshToken: string;
+    @Column({ comment: '리프레시 토큰', nullable: true })
+    refreshToken?: string;
 
-    @Column({ type: 'timestamp', nullable: true })
-    refreshTokenExp: Date;
+    @Column({ type: 'timestamp', comment: '리프레시 토큰 유효기간', nullable: true })
+    refreshTokenExp?: Date;
 
     @OneToOne(() => UserEntity, (user) => user.auth, {
         createForeignKeyConstraints: false,
