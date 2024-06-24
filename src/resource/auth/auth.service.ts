@@ -2,13 +2,13 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from '../../domain/user/repository/user.repository';
+import { AuthRepository } from '../../domain/auth/repository/auth.repository';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
-        private readonly userRepo: UserRepository,
+        private readonly authRepo: AuthRepository,
     ) {}
 
     async generateAccessToken(userDto: UserDto) {
@@ -61,46 +61,56 @@ export class AuthService {
         return refreshTokenExp;
     }
 
-    async validateServiceUser(email: string, password: string): Promise<any> {
-        const existingUser = await this.userRepo.findByEmail(email);
+    async createUserAuth(user) {
+        return await this.authRepo.save(
+            this.authRepo.create({
+                user,
+            }),
+        );
+    }
 
-        if (!existingUser) {
+    async validateServiceUser(email: string, password: string): Promise<any> {
+        const existingAuth = await this.authRepo.findByEmail(email);
+
+        if (!existingAuth) {
             throw new ForbiddenException('등록되지 않은 사용자입니다.');
         }
 
         // 전달받은 비밀번호와 DB에 저장된 비밀번호가 일치하는지 확인
-        if (!(await bcrypt.compare(password, existingUser.password))) {
+        if (!(await bcrypt.compare(password, existingAuth.user.password))) {
             throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
         }
 
-        return existingUser;
+        return existingAuth.user;
     }
 
-    async validateServiceRefresh(id: number, refreshToken: string): Promise<any> {
-        const existingUser = await this.userRepo.findById(id);
+    async validateServiceRefresh(userId: number, refreshToken: string): Promise<any> {
+        const existingAuth = await this.authRepo.findByUserId(userId);
 
-        if (!existingUser) {
+        if (!existingAuth) {
             throw new ForbiddenException('등록되지 않은 사용자입니다.');
         }
 
-        const isRefreshTokenMatching = await bcrypt.compare(refreshToken, existingUser.refreshToken);
+        const isRefreshTokenMatching = await bcrypt.compare(refreshToken, existingAuth.refreshToken);
 
         if (!isRefreshTokenMatching) {
             throw new ForbiddenException('Refresh 토큰이 일치하지 않습니다.');
         }
 
-        return existingUser;
+        return existingAuth.user;
     }
 
-    async updateRefreshToken(id: number, refreshToken: string, refreshTokenExp: Date) {
-        await this.userRepo.update(id, {
+    async updateRefreshToken(userId: number, refreshToken: string, refreshTokenExp: Date) {
+        const auth = await this.authRepo.findByUserId(userId);
+        await this.authRepo.update(auth.id, {
             refreshToken,
             refreshTokenExp,
         });
     }
 
-    async removeRefreshToken(id: number) {
-        await this.userRepo.update(id, {
+    async removeRefreshToken(userId: number) {
+        const auth = await this.authRepo.findByUserId(userId);
+        await this.authRepo.update(auth.id, {
             refreshToken: null,
             refreshTokenExp: null,
         });

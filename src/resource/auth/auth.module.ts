@@ -12,6 +12,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtServiceAuthGuard } from './guards/jwt-service.guard';
 import { PassportModule } from '@nestjs/passport';
 import { UserRepository } from '../../domain/user/repository/user.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthEntity } from '../../domain/auth/entity/auth.entity';
+import { AuthRepository } from '../../domain/auth/repository/auth.repository';
 
 @Module({
     imports: [
@@ -26,6 +29,7 @@ import { UserRepository } from '../../domain/user/repository/user.repository';
                 };
             },
         }),
+        TypeOrmModule.forFeature([AuthEntity]),
         UserModule,
     ],
     controllers: [AuthController],
@@ -35,6 +39,7 @@ import { UserRepository } from '../../domain/user/repository/user.repository';
         JwtRefreshStrategy,
         JwtRefreshGuard,
         AuthService,
+        AuthRepository,
         AuthFacade,
         UserRepository,
         { provide: APP_GUARD, useClass: JwtServiceAuthGuard },

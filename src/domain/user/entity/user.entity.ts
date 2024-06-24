@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { CommonWithUpdateAndDeleteEntity } from '../../../common/common.entity';
 import { ReportEntity } from '../../report/entity/report.entity';
+import { AuthEntity } from '../../auth/entity/auth.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends CommonWithUpdateAndDeleteEntity {
@@ -10,11 +11,10 @@ export class UserEntity extends CommonWithUpdateAndDeleteEntity {
     @Column({ length: 255 })
     password: string;
 
-    @Column({ nullable: true })
-    refreshToken: string;
-
-    @Column({ type: 'timestamp', nullable: true })
-    refreshTokenExp: Date;
+    @OneToOne(() => AuthEntity, (auth) => auth.user, {
+        cascade: ['remove'],
+    })
+    auth: AuthEntity;
 
     @OneToMany(() => ReportEntity, (report) => report.user, {
         cascade: ['remove', 'soft-remove'],

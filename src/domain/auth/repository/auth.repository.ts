@@ -1,28 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { UserEntity } from '../entity/user.entity';
+import { AuthEntity } from '../entity/auth.entity';
 
 @Injectable()
-export class UserRepository extends Repository<UserEntity> {
+export class AuthRepository extends Repository<AuthEntity> {
     constructor(private readonly dataSource: DataSource) {
-        super(UserEntity, dataSource.createEntityManager());
+        super(AuthEntity, dataSource.createEntityManager());
     }
 
-    async findById(id: number) {
+    async findByUserId(userId: number) {
         return await this.findOne({
             relations: {
-                auth: true,
+                user: true,
             },
             where: {
-                id,
+                userId,
             },
         });
     }
 
     async findByEmail(email: string) {
         return await this.findOne({
+            relations: {
+                user: true,
+            },
             where: {
-                email,
+                user: {
+                    email,
+                },
             },
         });
     }
