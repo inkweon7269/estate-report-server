@@ -9,25 +9,6 @@ export class ReportRepository extends Repository<ReportEntity> {
         super(ReportEntity, dataSource.createEntityManager());
     }
 
-    async findAll() {
-        return await this.find({
-            relations: {
-                user: true,
-            },
-        });
-    }
-
-    async findById(id: number) {
-        return await this.findOne({
-            where: {
-                id,
-            },
-            relations: {
-                user: true,
-            },
-        });
-    }
-
     async findAllPagination(
         { page, limit }: { page: number; limit: number },
         overrideFindOptions?: FindManyOptions<ReportEntity>,
