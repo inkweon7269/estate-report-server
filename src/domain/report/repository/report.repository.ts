@@ -10,11 +10,15 @@ export class ReportRepository extends Repository<ReportEntity> {
     }
 
     async findAllPagination(
+        userId: number,
         { page, limit }: { page: number; limit: number },
         overrideFindOptions?: FindManyOptions<ReportEntity>,
     ) {
         const { skip, take } = getSkip(page, limit);
         return await this.findAndCount({
+            where: {
+                userId,
+            },
             skip,
             take,
             ...(overrideFindOptions && overrideFindOptions),
