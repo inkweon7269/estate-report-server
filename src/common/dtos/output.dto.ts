@@ -8,7 +8,7 @@ export class PaginationResponse<T> {
     totalCount: number;
 
     @ApiProperty()
-    count: number;
+    limit: number;
 
     @ApiProperty()
     totalPage: number;
@@ -16,11 +16,11 @@ export class PaginationResponse<T> {
     @ApiProperty()
     page: number;
 
-    constructor(data: T[], totalCount: number, page: number, take: number) {
+    constructor(data: T[], totalCount: number, page: number, limit: number) {
         this.list = data;
         this.totalCount = totalCount;
-        this.count = data.length;
-        this.totalPage = Math.ceil(totalCount / take);
+        this.limit = limit;
+        this.totalPage = Math.ceil(totalCount / limit);
         this.page = page;
     }
 }
