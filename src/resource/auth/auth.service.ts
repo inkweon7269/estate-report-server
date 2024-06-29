@@ -1,15 +1,28 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserDto } from './dto/auth.dto';
+import { CreateUserDto, UserDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { AuthRepository } from '../../domain/auth/repository/auth.repository';
+import { UserRepository } from '../../domain/user/repository/user.repository';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
-        private readonly authRepo: AuthRepository,
+        private readonly userRepo: UserRepository,
     ) {}
+
+    async postUser(createUserDto: CreateUserDto) {
+        const existingUser = await this.userRepo.findByEmail(createUserDto.email);
+
+        if (existingUser) {
+            throw new BadRequestException(`이미 존재하는 이메일입니다.`);
+        }
+
+        const hashPassword = await bcrypt.hash(createUserDto.password, 10);
+        createUserDto.password = hashPassword;
+
+        return await this.userRepo.createUser(createUserDto);
+    }
 
     async generateAccessToken(userDto: UserDto) {
         const payload = {
@@ -61,58 +74,60 @@ export class AuthService {
         return refreshTokenExp;
     }
 
-    async createUserAuth(user) {
-        return await this.authRepo.save(
-            this.authRepo.create({
-                user,
-            }),
-        );
-    }
-
     async validateServiceUser(email: string, password: string): Promise<any> {
-        const existingAuth = await this.authRepo.findByEmail(email);
+        const existingUser = await this.userRepo.findByEmail(email);
 
-        if (!existingAuth) {
+        if (!existingUser) {
             throw new ForbiddenException('등록되지 않은 사용자입니다.');
         }
 
         // 전달받은 비밀번호와 DB에 저장된 비밀번호가 일치하는지 확인
-        if (!(await bcrypt.compare(password, existingAuth.user.password))) {
+        if (!(await bcrypt.compare(password, existingUser.password))) {
             throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
         }
 
-        return existingAuth.user;
+        return existingUser;
     }
 
     async validateServiceRefresh(userId: number, refreshToken: string): Promise<any> {
-        const existingAuth = await this.authRepo.findByUserId(userId);
+        const existingUser = await this.userRepo.findById(userId);
 
-        if (!existingAuth) {
+        if (!existingUser) {
             throw new ForbiddenException('등록되지 않은 사용자입니다.');
         }
 
-        const isRefreshTokenMatching = await bcrypt.compare(refreshToken, existingAuth.refreshToken);
+        const isRefreshTokenMatching = await bcrypt.compare(refreshToken, existingUser.auth.refreshToken);
 
         if (!isRefreshTokenMatching) {
             throw new ForbiddenException('Refresh 토큰이 일치하지 않습니다.');
         }
 
-        return existingAuth.user;
+        return existingUser;
     }
 
     async updateRefreshToken(userId: number, refreshToken: string, refreshTokenExp: Date) {
-        const auth = await this.authRepo.findByUserId(userId);
-        await this.authRepo.update(auth.id, {
-            refreshToken,
-            refreshTokenExp,
-        });
+        const existingUser = await this.userRepo.findById(userId);
+
+        if (!existingUser) {
+            throw new ForbiddenException('등록되지 않은 사용자입니다.');
+        }
+
+        existingUser.auth.refreshToken = refreshToken;
+        existingUser.auth.refreshTokenExp = refreshTokenExp;
+
+        await this.userRepo.save(existingUser);
     }
 
     async removeRefreshToken(userId: number) {
-        const auth = await this.authRepo.findByUserId(userId);
-        await this.authRepo.update(auth.id, {
-            refreshToken: null,
-            refreshTokenExp: null,
-        });
+        const existingUser = await this.userRepo.findById(userId);
+
+        if (!existingUser) {
+            throw new ForbiddenException('등록되지 않은 사용자입니다.');
+        }
+
+        existingUser.auth.refreshToken = null;
+        existingUser.auth.refreshTokenExp = null;
+
+        await this.userRepo.save(existingUser);
     }
 }

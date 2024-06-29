@@ -1,20 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserService } from '../user/user.service';
 import { CreateUserDto, UserDto } from './dto/auth.dto';
-import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class AuthFacade {
-    constructor(
-        private readonly authService: AuthService,
-        private readonly userService: UserService,
-    ) {}
+    constructor(private readonly authService: AuthService) {}
 
-    @Transactional()
     async postUser(createUserDto: CreateUserDto) {
-        const user = await this.userService.postUser(createUserDto);
-        await this.authService.createUserAuth(user);
+        const user = await this.authService.postUser(createUserDto);
         return await this.authService.generateAccessToken(user);
     }
 
