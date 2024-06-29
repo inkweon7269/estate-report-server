@@ -16,6 +16,9 @@ export class ReportRepository extends Repository<ReportEntity> {
     ) {
         const { skip, take } = getSkip(page, limit);
         return await this.findAndCount({
+            relations: {
+                user: true,
+            },
             where: {
                 userId,
             },

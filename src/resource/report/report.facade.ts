@@ -17,7 +17,7 @@ export class ReportFacade {
         const [list, count] = await this.reportService.getReports(userId, paginationDto);
 
         return {
-            list,
+            list: list.map((item) => ReportResponseDto.of(item)),
             count,
         };
     }
