@@ -27,4 +27,16 @@ export class ReportRepository extends Repository<ReportEntity> {
             ...(overrideFindOptions && overrideFindOptions),
         });
     }
+
+    async findById(userId: number, reportId: number) {
+        return await this.findOne({
+            relations: {
+                user: true,
+            },
+            where: {
+                id: reportId,
+                userId,
+            },
+        });
+    }
 }
