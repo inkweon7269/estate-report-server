@@ -1,8 +1,9 @@
 import { AuthController } from './auth.controller';
 import { AuthFacade } from './auth.facade';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateUserDto } from './dto/auth.dto';
+import { CreateUserDto, UserDto } from './dto/auth.dto';
 import { BadRequestException } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 describe('AuthController', () => {
     let authController: AuthController;
@@ -16,6 +17,7 @@ describe('AuthController', () => {
                     provide: AuthFacade,
                     useValue: {
                         postUser: jest.fn(),
+                        loginUser: jest.fn(),
                     },
                 },
             ],
@@ -68,6 +70,37 @@ describe('AuthController', () => {
             // rejects.toThrow() : 비동기 함수가 호출될 때 발생하는 예외를 검증하는 데 사용됩니다
             await expect(authController.postUser(createUserDto)).rejects.toThrow(BadRequestException);
             expect(authFacade.postUser).toHaveBeenCalledWith(createUserDto);
+        });
+    });
+
+    describe('로그인', () => {
+        it('사용자가 접속합니다.', async () => {
+            const req = {
+                user: {
+                    id: 1,
+                    email: 'test@example.com',
+                },
+            } as unknown as Request;
+
+            const res = {
+                setHeader: jest.fn(),
+                cookie: jest.fn(),
+                json: jest.fn(),
+            } as unknown as Response;
+
+            const mockToken = {
+                accessToken: 'mockAccessToken',
+                refreshToken: 'mockRefreshToken',
+            };
+
+            jest.spyOn(authFacade, 'loginUser').mockResolvedValue(mockToken);
+
+            await authController.login(req, res);
+
+            expect(authFacade.loginUser).toHaveBeenCalledWith(req.user);
+            expect(res.setHeader).toHaveBeenCalledWith('Authorization', 'Bearer mockAccessToken');
+            expect(res.cookie).toHaveBeenCalledWith('accessToken', 'mockAccessToken', { httpOnly: true });
+            expect(res.cookie).toHaveBeenCalledWith('refreshToken', 'mockRefreshToken', { httpOnly: true });
         });
     });
 });
