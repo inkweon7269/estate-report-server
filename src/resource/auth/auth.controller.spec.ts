@@ -36,21 +36,19 @@ describe('AuthController', () => {
                 password: 'password123',
             };
 
-            const mockUser = {
+            const mockToken = {
                 accessToken:
                     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTAsImVtYWlsIjoiZGV2MTQyQGdtYWlsLmNvbSIsImlhdCI6MTcxOTc2MzAwNywiZXhwIjoxNzE5NzY0ODA3fQ.QgbX0J36zeSoTTUEHjAFbm8u_4-5ZLb-BoA4JGe-FLU',
-                refreshToken:
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTAsImlhdCI6MTcxOTc2MzAwNywiZXhwIjoxNzE5NzY0ODA3fQ.4d9hOcfioD7psjCqraVqAzRyP6dlRCUja-qzqcrBX6Q',
             };
 
             // mockResolvedValue(성공)했을 때 반환값을 지정합니다.
-            jest.spyOn(authFacade, 'postUser').mockResolvedValue(mockUser);
+            jest.spyOn(authFacade, 'postUser').mockResolvedValue(mockToken);
 
             // authController의 postUser 메서드를 호출하여 결과를 result 변수에 저장합니다.
             const result = await authController.postUser(createUserDto);
 
             // postUser 메서드가 반환한 결과가 mockUser와 같은지 확인합니다.
-            expect(result).toBe(mockUser);
+            expect(result).toBe(mockToken);
 
             // postUser 메서드가 createUserDto를 인수로 호출되었는지 확인합니다.
             expect(authFacade.postUser).toHaveBeenCalledWith(createUserDto);
