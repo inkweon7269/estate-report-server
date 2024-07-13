@@ -24,6 +24,9 @@ export class ReportRepository extends Repository<ReportEntity> {
             },
             skip,
             take,
+            order: {
+                createdAt: 'DESC',
+            },
             ...(overrideFindOptions && overrideFindOptions),
         });
     }

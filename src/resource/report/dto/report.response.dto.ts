@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReportEntity } from '../../../domain/report/entity/report.entity';
 import { UserResponseDto } from '../../user/dto/user.response.dto';
+import * as dayjs from 'dayjs';
 
 export class ReportResponseDto {
     @ApiProperty()
     id: number;
 
     @ApiProperty()
-    createdAt: Date;
+    createdAt: string;
 
     @ApiProperty()
     space: number;
@@ -67,7 +68,7 @@ export class ReportResponseDto {
         const dto = new this();
 
         dto.id = report.id;
-        dto.createdAt = report.createdAt;
+        dto.createdAt = dayjs(report.createdAt).format('YYYY-MM-DD HH:mm:ss');
         dto.space = report.space;
         dto.middle = report.middle;
         dto.elementary = report.elementary;
